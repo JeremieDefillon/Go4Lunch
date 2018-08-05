@@ -1,0 +1,55 @@
+[
+  {
+    "eventType": "DELAYED_MESSAGE_POSTED",
+    "timestamp": 1533451630890,
+    "actionCode": -1,
+    "delayTime": 3597688,
+    "canScrollTo": false,
+    "elementDescriptors": []
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "timestamp": 1533451639781,
+    "replacementText": "Sign in with Google",
+    "actionCode": -1,
+    "delayTime": 0,
+    "canScrollTo": true,
+    "elementDescriptors": [
+      {
+        "className": "com.firebase.ui.auth.util.ui.SupportVectorDrawablesButton",
+        "recyclerViewChildPosition": -1,
+        "adapterViewChildPosition": -1,
+        "groupViewChildPosition": 0,
+        "resourceId": "com.gz.jey.go4lunch:id/google_button",
+        "contentDescription": "",
+        "text": "Sign in with Google"
+      },
+      {
+        "className": "android.widget.LinearLayout",
+        "recyclerViewChildPosition": -1,
+        "adapterViewChildPosition": -1,
+        "groupViewChildPosition": 0,
+        "resourceId": "com.gz.jey.go4lunch:id/btn_holder",
+        "contentDescription": "",
+        "text": ""
+      },
+      {
+        "className": "android.widget.ScrollView",
+        "recyclerViewChildPosition": -1,
+        "adapterViewChildPosition": -1,
+        "groupViewChildPosition": 2,
+        "resourceId": "com.gz.jey.go4lunch:id/container",
+        "contentDescription": "",
+        "text": ""
+      }
+    ]
+  },
+  {
+    "eventType": "DELAYED_MESSAGE_POSTED",
+    "timestamp": 1533451642014,
+    "actionCode": -1,
+    "delayTime": 3599571,
+    "canScrollTo": false,
+    "elementDescriptors": []
+  }
+]
