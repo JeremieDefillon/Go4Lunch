@@ -23,7 +23,6 @@ class MainActivity : AppCompatActivity() {
     var signInFragment: SignInFragment? = null
     var mapViewFragment: MapViewFragment? = null
 
-
     // FOR DESIGN
     var coordinatorLayout: CoordinatorLayout? = null
     var drawerLayout: DrawerLayout? = null
