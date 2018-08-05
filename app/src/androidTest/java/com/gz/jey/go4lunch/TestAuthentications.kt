@@ -2,6 +2,7 @@ package com.gz.jey.go4lunch
 
 import android.support.test.rule.ActivityTestRule
 import android.support.test.runner.AndroidJUnit4
+import com.gz.jey.go4lunch.activities.MainActivity
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -30,23 +31,12 @@ class TestAuthentications {
         mActivity = mActivityRule.getActivity()
     }
     /**
-     * Testing authentication with google's account connecting.
+     * Testing authentication
      */
     @Test
-    fun useConnectWithGoogle() {
-        // Proceed log in with google
-        val accountName = mActivityRule.activity.getAccountName()
-        assertEquals("JeyTest", accountName)
-    }
-
-    /**
-     * Testing authentication with facebook's account connecting.
-     */
-    @Test
-    fun useConnectWithFacebook() {
-        // Proceed log in with facebook
-        val accountName = mActivityRule.activity.getAccountName()
-        assertEquals("JeyTest", accountName)
+    fun testIfConnected() {
+        val isLogged = mActivityRule.activity.isCurrentUserLogged()
+        assertEquals(true, isLogged)
     }
 
     /**
