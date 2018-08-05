@@ -3,18 +3,19 @@ package com.gz.jey.go4lunch.activities
 import android.os.Bundle
 import android.support.annotation.Nullable
 import android.support.design.widget.CoordinatorLayout
+import android.support.design.widget.NavigationView
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
+import android.support.v4.widget.DrawerLayout
+import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
-import android.view.View
-import butterknife.BindView
-import butterknife.ButterKnife
+import android.support.v7.widget.Toolbar
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.fragments.MapViewFragment
 import com.gz.jey.go4lunch.fragments.SignInFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-
+import com.gz.jey.go4lunch.utils.CheckIfTest
 
 
 class MainActivity : AppCompatActivity() {
@@ -25,13 +26,46 @@ class MainActivity : AppCompatActivity() {
 
     // FOR DESIGN
     var coordinatorLayout: CoordinatorLayout? = null
+    var drawerLayout: DrawerLayout? = null
+    var toolbar: Toolbar? = null
+    var navigationView: NavigationView? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_main)
 
-        this.setSignInFragment()
+        this.setDrawerLayout()
+        this.setNavigationView()
+
+        if(!CheckIfTest.isRunningTest("NavDrawerTest"))
+            this.setSignInFragment()
+    }
+
+    /**
+     * Configure Drawer Layout
+     */
+    private fun setDrawerLayout() {
+        toolbar = findViewById(R.id.activity_main_toolbar)
+        setSupportActionBar(toolbar)
+        drawerLayout = findViewById(R.id.activity_main_drawer_layout)
+        val toggle = ActionBarDrawerToggle(this, drawerLayout,
+                toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        drawerLayout!!.addDrawerListener(toggle)
+        toggle.syncState()
+    }
+
+    /**
+     * Configure NavigationView
+     */
+    private fun setNavigationView() {
+        navigationView = findViewById(R.id.activity_main_nav_view)
+        navigationView!!.getMenu().clear()
+        menuInflater.inflate(R.menu.menu_nav_drawer, navigationView!!.getMenu())
+        val menu = navigationView!!.getMenu()
+
+
+        //navigationView!!.setNavigationItemSelectedListener(this)
     }
 
     /**

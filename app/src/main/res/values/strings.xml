@@ -20,4 +20,9 @@
 
     <!-- TOOLBAR TITLES -->
     <string name="toolbar_title_login_activity">My Profile</string>
+
+    <!-- NAVIGATION DRAWER -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
 </resources>
