@@ -9,10 +9,13 @@
     <android.support.design.widget.CoordinatorLayout
         android:id="@+id/main_activity_coordinator_layout"
         android:layout_width="match_parent"
-        android:layout_gravity="center|bottom"
-        android:layout_height="100dp">
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:layout_gravity="center|bottom">
 
     </android.support.design.widget.CoordinatorLayout>
+
+
 
     <FrameLayout
         android:id="@+id/fragmentContainer"

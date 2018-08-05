@@ -2,8 +2,13 @@ package com.gz.jey.go4lunch.activities
 
 import android.os.Bundle
 import android.support.annotation.Nullable
+import android.support.design.widget.CoordinatorLayout
+import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
+import android.view.View
+import butterknife.BindView
+import butterknife.ButterKnife
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.fragments.MapViewFragment
 import com.gz.jey.go4lunch.fragments.SignInFragment
@@ -18,7 +23,11 @@ class MainActivity : AppCompatActivity() {
     var mapViewFragment: MapViewFragment? = null
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    // FOR DESIGN
+    var coordinatorLayout: CoordinatorLayout? = null
+
+
+    override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_main)
 
@@ -49,6 +58,18 @@ class MainActivity : AppCompatActivity() {
         this.supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit()
+    }
+
+    /**
+     * @param coordinatorLayout CoordinatorLayout
+     * @param message String
+     */
+    internal fun showSnackBar(message: String) {
+        if(message == getString(R.string.connection_succeed)){
+            setMapViewFragment()
+        }
+        coordinatorLayout = findViewById(R.id.main_activity_coordinator_layout)
+        Snackbar.make(coordinatorLayout!!, message, Snackbar.LENGTH_SHORT).show()
     }
 
     @Nullable

@@ -13,10 +13,10 @@
     <string name="facebook_login_protocol_scheme" translatable="false" tools:ignore="UnusedResources">287799998659997</string>
 
     <!-- RESULT SIGN IN -->
-    <string name="connection_succeed">Connection Succeed</string>
-    <string name="error_authentication_canceled">Error Authentication Canceled</string>
-    <string name="error_no_internet">Error No Internet</string>
-    <string name="error_unknown_error">Error Unknown Error</string>
+    <string name="connection_succeed">Connection Succeed !</string>
+    <string name="error_authentication_canceled">Error Authentication Canceled !</string>
+    <string name="error_no_internet">Error No Internet !</string>
+    <string name="error_unknown_error">Error Unknown Error !</string>
 
     <!-- TOOLBAR TITLES -->
     <string name="toolbar_title_login_activity">My Profile</string>
