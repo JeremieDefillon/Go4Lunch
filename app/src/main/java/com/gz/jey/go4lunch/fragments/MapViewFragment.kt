@@ -38,7 +38,7 @@ class MapViewFragment : Fragment() {
     }
 
     private fun mapActivity(){
-
+        mainActivity?.onTabSelected(0)
     }
 
 

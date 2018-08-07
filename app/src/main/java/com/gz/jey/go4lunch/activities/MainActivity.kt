@@ -1,21 +1,31 @@
 package com.gz.jey.go4lunch.activities
 
+import android.graphics.Canvas
+import android.graphics.PorterDuff
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Bundle
 import android.support.annotation.Nullable
 import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.NavigationView
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
+import android.support.v4.content.ContextCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
+import android.widget.ImageView
+import android.widget.TextView
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.fragments.MapViewFragment
 import com.gz.jey.go4lunch.fragments.SignInFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.gz.jey.go4lunch.utils.CheckIfTest
+import android.graphics.drawable.GradientDrawable
+import android.support.v4.content.ContextCompat.getDrawable
 
 
 class MainActivity : AppCompatActivity() {
@@ -103,6 +113,30 @@ class MainActivity : AppCompatActivity() {
         }
         coordinatorLayout = findViewById(R.id.main_activity_coordinator_layout)
         Snackbar.make(coordinatorLayout!!, message, Snackbar.LENGTH_SHORT).show()
+    }
+
+    internal fun onTabSelected(index : Int){
+        val map_i = findViewById(R.id.map_button_img) as ImageView
+        val map_t = findViewById(R.id.map_button_txt) as TextView
+        val list_i = findViewById(R.id.list_button_img) as ImageView
+        val list_t = findViewById(R.id.list_button_txt) as TextView
+        val people_i = findViewById(R.id.people_button_img) as ImageView
+        val people_t = findViewById(R.id.people_button_txt) as TextView
+        val prim = ContextCompat.getColor(this, R.color.colorPrimary)
+        val black = ContextCompat.getColor(this, R.color.colorBlack)
+
+
+        map_i.setColorFilter(black, PorterDuff.Mode.SRC_IN)
+        map_t.setTextColor(black)
+        list_i.setColorFilter(black, PorterDuff.Mode.SRC_IN)
+        list_t.setTextColor(black)
+        people_i.setColorFilter(black, PorterDuff.Mode.SRC_IN)
+        people_t.setTextColor(black)
+
+        if(index == 0){
+            map_i.setColorFilter(prim)
+            map_t.setTextColor(prim)
+        }
     }
 
     @Nullable
