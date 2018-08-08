@@ -3,45 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <item android:id="@+id/item_group0"
-        android:title="">
-        <menu>
-            <group android:id="@+id/group0"
-                android:checkableBehavior="single">
-
-            </group>
-        </menu>
-    </item>
-
-    <item android:id="@+id/item_group1"
-        android:title="">
-        <menu>
-            <group android:id="@+id/group1"
-                android:checkableBehavior="single">
-
-            </group>
-        </menu>
-    </item>
-
-    <item android:id="@+id/item_group2"
-        android:title="">
-        <menu>
-            <group android:id="@+id/group2"
-                android:checkableBehavior="single">
-
-            </group>
-        </menu>
-    </item>
-
-    <item android:id="@+id/item_group3"
-        android:title="">
-        <menu>
-            <group android:id="@+id/group3"
-                android:checkableBehavior="single">
-
-            </group>
-        </menu>
-    </item>
+    <group android:id="@+id/group0"
+            android:checkableBehavior="single">
+        <item android:id="@+id/restaurant_menu"
+            android:icon="@drawable/restaurant_menu"
+            android:title="@string/restaurant_menu_EN">
+        </item>
+        <item android:id="@+id/settings"
+            android:icon="@drawable/settings"
+            android:title="@string/settings_EN">
+        </item>
+        <item android:id="@+id/power_settings"
+            android:icon="@drawable/power_settings"
+            android:title="@string/power_settings_EN">
+        </item>
+    </group>
 
 
 </menu>

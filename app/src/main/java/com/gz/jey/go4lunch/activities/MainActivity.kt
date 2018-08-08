@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
      * Configure Drawer Layout
      */
     private fun setDrawerLayout() {
-        toolbar = findViewById(R.id.activity_main_toolbar)
+        toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         drawerLayout = findViewById(R.id.activity_main_drawer_layout)
         val toggle = ActionBarDrawerToggle(this, drawerLayout,
@@ -156,7 +156,6 @@ class MainActivity : AppCompatActivity() {
             2 -> {people_i.setColorFilter(prim)
                 people_t.setTextColor(prim)
                 setWorkmatesFragment()}
-
         }
     }
 

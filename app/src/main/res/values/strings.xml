@@ -4,6 +4,7 @@
     <!-- for the image Description -->
     <string name="app_icon">App Icon</string>
     <string name="main_background">Main Background</string>
+    <string name="search">Search</string>
 
     <string name="sign_google">Sign in with Google</string>
     <string name="sign_facebook">Sign in with Facebook</string>
@@ -24,6 +25,55 @@
     <!-- NAVIGATION DRAWER -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- BOTTOM MENU -->
+
+    <string-array name="map">
+        <item>Map</item>
+        <item>Plan</item>
+    </string-array>
+
+    <string-array name="restaurants">
+        <item>Restaurants</item>
+        <item>Restaurants</item>
+    </string-array>
+
+    <string-array name="workmates">
+        <item>Workmates</item>
+        <item>Collègues</item>
+    </string-array>
+
+    <!-- GOOGLE MAP -->
     <string name="title_activity_maps">Map</string>
+    <string name="google_maps_key">AIzaSyB2l1D02XIzEFmEecNFAwhe404tHaRS1Sw</string>
+    <string name="current_position">Current Position</string>
+    <string name="default_info_title">Current Position</string>
+    <string name="default_info_snippet">Current Position</string>
+
+
+    <string name="restaurant_menu_EN">Your Lunch</string>
+    <string name="restaurant_menu_FR">Votre Repas</string>
+
+    <string-array name="restaurant_menu">
+        <item>@string/restaurant_menu_EN</item>
+        <item>@string/restaurant_menu_FR</item>
+    </string-array>
+
+
+    <string name="settings_EN">Settings</string>
+    <string name="settings_FR">Préférences</string>
+
+     <string-array name="settings">
+         <item>@string/settings_EN</item>
+         <item>@string/settings_FR</item>
+     </string-array>
+
+    <string name="power_settings_EN">Logout</string>
+    <string name="power_settings_FR">Se Déconnecter</string>
+
+    <string-array name="power_settings">
+        <item>@string/power_settings_EN</item>
+        <item>@string/power_settings_FR</item>
+    </string-array>
 
 </resources>
