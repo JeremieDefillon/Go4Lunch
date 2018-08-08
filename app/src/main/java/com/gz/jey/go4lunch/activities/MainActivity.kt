@@ -1,10 +1,8 @@
 package com.gz.jey.go4lunch.activities
 
-import android.graphics.Canvas
+import android.content.Context
 import android.graphics.PorterDuff
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.Bundle
 import android.support.annotation.Nullable
 import android.support.design.widget.CoordinatorLayout
@@ -18,14 +16,15 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.widget.ImageView
 import android.widget.TextView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.fragments.MapViewFragment
 import com.gz.jey.go4lunch.fragments.SignInFragment
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.gz.jey.go4lunch.utils.CheckIfTest
-import android.graphics.drawable.GradientDrawable
-import android.support.v4.content.ContextCompat.getDrawable
+import android.content.Intent
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -89,8 +88,23 @@ class MainActivity : AppCompatActivity() {
      * Set MapView
      */
     internal fun setMapViewFragment(){
-        this.mapViewFragment = MapViewFragment.newInstance(this)
-        this.moveFragment(this.mapViewFragment!!)
+        val intent = Intent(this, MapsActivity::class.java)
+        startActivity(intent)
+
+        //this.mapViewFragment = MapViewFragment.newInstance(this)
+        //this.moveFragment(this.mapViewFragment!!)
+    }
+
+    /**
+     * Set Restaurants
+     */
+    internal fun setRestaurantsFragment(){
+    }
+
+    /**
+     * Set Workmates
+     */
+    internal fun setWorkmatesFragment(){
     }
 
     /**
@@ -109,7 +123,7 @@ class MainActivity : AppCompatActivity() {
      */
     internal fun showSnackBar(message: String) {
         if(message == getString(R.string.connection_succeed)){
-            setMapViewFragment()
+            onTabSelected(0)
         }
         coordinatorLayout = findViewById(R.id.main_activity_coordinator_layout)
         Snackbar.make(coordinatorLayout!!, message, Snackbar.LENGTH_SHORT).show()
@@ -125,19 +139,33 @@ class MainActivity : AppCompatActivity() {
         val prim = ContextCompat.getColor(this, R.color.colorPrimary)
         val black = ContextCompat.getColor(this, R.color.colorBlack)
 
-
-        map_i.setColorFilter(black, PorterDuff.Mode.SRC_IN)
+        map_i.setImageDrawable(changeDrawableColor(this, R.drawable.map, black))
         map_t.setTextColor(black)
-        list_i.setColorFilter(black, PorterDuff.Mode.SRC_IN)
+        list_i.setImageDrawable(changeDrawableColor(this, R.drawable.list, black))
         list_t.setTextColor(black)
-        people_i.setColorFilter(black, PorterDuff.Mode.SRC_IN)
+        people_i.setImageDrawable(changeDrawableColor(this, R.drawable.people, black))
         people_t.setTextColor(black)
 
-        if(index == 0){
-            map_i.setColorFilter(prim)
-            map_t.setTextColor(prim)
+        when(index){
+            0 -> {map_i.setColorFilter(prim)
+                map_t.setTextColor(prim)
+                setMapViewFragment()}
+            1 -> {list_i.setColorFilter(prim)
+                list_t.setTextColor(prim)
+                setRestaurantsFragment()}
+            2 -> {people_i.setColorFilter(prim)
+                people_t.setTextColor(prim)
+                setWorkmatesFragment()}
+
         }
     }
+
+    fun changeDrawableColor(context : Context, icon : Int, newColor : Int) : Drawable {
+        val mDrawable = ContextCompat.getDrawable(context, icon)?.mutate() as Drawable
+        mDrawable?.setColorFilter(newColor, PorterDuff.Mode.SRC_IN)
+        return mDrawable
+    }
+
 
     @Nullable
     fun getCurrentUser(): FirebaseUser? {

@@ -1,36 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main_drawer_layout"
-    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:openDrawer="start"
-    tools:context=".activities.MainActivity">
+    android:layout_width="match_parent">
 
-    <!-- Toolbar -->
-    <android.support.v7.widget.Toolbar
-
-        android:id="@+id/activity_main_toolbar"
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
-        android:background="@color/colorPrimaryDark"
-        app:theme="@style/ToolBarStyle"/>
-
-    <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/main_activity_coordinator_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:layout_gravity="center|bottom">
-
-    </android.support.design.widget.CoordinatorLayout>
+        android:layout_height="match_parent"
+        tools:context=".activities.MapsActivity" />
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="70dp"
         android:gravity="bottom"
+        android:layout_gravity="bottom"
         android:background="@color/colorPrimary">
 
         <LinearLayout
@@ -143,27 +130,4 @@
         </LinearLayout>
 
     </FrameLayout>
-
-
-    <FrameLayout
-        android:id="@+id/fragmentContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </FrameLayout>
-
-
-
-    <!-- 2 | NavigationView -->
-    <android.support.design.widget.NavigationView
-        android:id="@+id/activity_main_nav_view"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:fitsSystemWindows="true"
-        app:headerLayout="@layout/activity_main_nav_header"
-        android:visibility="gone"
-        app:menu="@menu/menu_nav_drawer" />
-
-
-
-</android.support.v4.widget.DrawerLayout>
+</FrameLayout>
