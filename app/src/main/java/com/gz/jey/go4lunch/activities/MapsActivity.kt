@@ -1,21 +1,17 @@
 package com.gz.jey.go4lunch.activities
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.PorterDuff
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
-import android.support.v4.app.FragmentActivity
 import android.support.v4.content.ContextCompat
+import android.support.v4.widget.DrawerLayout
+import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.View
-import android.widget.ImageView
 import android.widget.RelativeLayout
-import android.widget.TextView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.places.GeoDataClient
@@ -32,9 +28,10 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.gz.jey.go4lunch.R
+import com.gz.jey.go4lunch.utils.SetBottomMenuTab
 
 
-class MapsActivity : FragmentActivity(), OnMapReadyCallback {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val TAG = "MapsActivity"
     private val DEFAULT_ZOOM = 16f
@@ -53,9 +50,7 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
-        val mToolbar = findViewById<Toolbar>(R.id.toolbar)
-        //AppCompatActivity.setSupportActionBar(mToolbar)
-
+        setDrawerLayout()
         onClickCurrentPosition()
 
         // Construct a GeoDataClient.
@@ -67,11 +62,13 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback {
         // Construct a FusedLocationProviderClient.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
+        // To set the bottom menu and color shape item corresponding
+        SetBottomMenuTab.onTabSelected(this, this, 0, lang)
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        onTabSelected(0)
     }
 
 
@@ -107,40 +104,17 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback {
         })
     }
 
-    internal fun onTabSelected(index : Int){
-        val map_i = findViewById(R.id.map_button_img) as ImageView
-        val map_t = findViewById(R.id.map_button_txt) as TextView
-        val list_i = findViewById(R.id.list_button_img) as ImageView
-        val list_t = findViewById(R.id.list_button_txt) as TextView
-        val people_i = findViewById(R.id.people_button_img) as ImageView
-        val people_t = findViewById(R.id.people_button_txt) as TextView
-        val prim = ContextCompat.getColor(this, R.color.colorPrimary)
-        val black = ContextCompat.getColor(this, R.color.colorBlack)
-
-        map_i.setImageDrawable(changeDrawableColor(this, R.drawable.map, black))
-        map_t.setText(resources.getStringArray(R.array.map)[lang])
-        map_t.setTextColor(black)
-        list_i.setImageDrawable(changeDrawableColor(this, R.drawable.list, black))
-        list_t.setText(resources.getStringArray(R.array.restaurants)[lang])
-        list_t.setTextColor(black)
-        people_i.setImageDrawable(changeDrawableColor(this, R.drawable.people, black))
-        people_t.setText(resources.getStringArray(R.array.workmates)[lang])
-        people_t.setTextColor(black)
-
-        when(index){
-            0 -> {map_i.setColorFilter(prim)
-                map_t.setTextColor(prim)}
-            1 -> {list_i.setColorFilter(prim)
-                list_t.setTextColor(prim)}
-            2 -> {people_i.setColorFilter(prim)
-                people_t.setTextColor(prim)}
-        }
-    }
-
-    fun changeDrawableColor(context : Context, icon : Int, newColor : Int) : Drawable {
-        val mDrawable = ContextCompat.getDrawable(context, icon)?.mutate() as Drawable
-        mDrawable?.setColorFilter(newColor, PorterDuff.Mode.SRC_IN)
-        return mDrawable
+    /**
+     * Configure Drawer Layout
+     */
+    private fun setDrawerLayout() {
+        val mToolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(mToolbar)
+        val drawerLayout = findViewById<DrawerLayout>(R.id.activity_main_drawer_layout)
+        val toggle = ActionBarDrawerToggle(this, drawerLayout,
+                mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
     }
 
     private fun getLocationPermission() {

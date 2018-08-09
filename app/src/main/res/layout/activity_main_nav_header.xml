@@ -2,7 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="250dp"
+    android:layout_width="280dp"
     android:layout_height="@dimen/nav_header_height"
     android:background="#B2B9E1"
     android:gravity="center"
@@ -37,21 +37,21 @@
                 android:textSize="30sp"/>
 
             <LinearLayout
-                android:layout_width="200dp"
-                android:layout_height="56dp"
+                android:layout_width="260dp"
+                android:layout_height="70dp"
                 android:orientation="horizontal"
                 android:layout_gravity="center"
                 android:gravity="center">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/account_picture"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/account_icon"
-                    android:layout_gravity="center"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:src="@drawable/account_icon"
+                    android:layout_gravity="top|center"
                     android:layout_marginEnd="10dp"
                     app:civ_border_width="2dp"
-                    app:civ_border_color="#FF000000"
+                    app:civ_border_color="@color/colorWhite"
                     />
 
 
@@ -84,18 +84,5 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:background="@color/colorPrimary">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_g4l"
-            android:layout_gravity="bottom"/>
-
     </FrameLayout>
 </LinearLayout>
