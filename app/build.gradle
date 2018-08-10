@@ -13,6 +13,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -37,6 +38,7 @@ dependencies {
     implementation "android.arch.core:common:$arch_version"
     implementation 'com.jakewharton:butterknife:8.8.1'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
+    implementation 'com.android.support:multidex:1.0.3'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"

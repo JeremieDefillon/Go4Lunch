@@ -27,20 +27,21 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <!-- BOTTOM MENU -->
-    <string name="map">Map</string>
+    <string name="map">Plan</string>
+
     <string name="restaurants">Restaurants</string>
-    <string name="workmates">Workmates</string>
+
+    <string name="workmates">Collègues</string>
 
     <!-- GOOGLE MAP -->
     <string name="title_activity_maps">Map</string>
     <string name="google_maps_key">AIzaSyB2l1D02XIzEFmEecNFAwhe404tHaRS1Sw</string>
     <string name="current_position">Current Position</string>
-    <string name="default_info_title">Current Position</string>
-    <string name="default_info_snippet">Current Position</string>
+    <string name="default_info_title">Default Title</string>
+    <string name="default_info_snippet">Default Snippet</string>
 
-
-    <string name="restaurant_menu">Your Lunch</string>
-    <string name="settings">Settings</string>
-    <string name="power_settings">Logout</string>
+    <string name="restaurant_menu">Votre Repas</string>
+    <string name="settings">Préférences</string>
+    <string name="power_settings">Se Déconnecter</string>
 
 </resources>

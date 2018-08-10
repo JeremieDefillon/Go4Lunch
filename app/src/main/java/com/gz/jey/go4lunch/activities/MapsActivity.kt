@@ -63,7 +63,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         // To set the bottom menu and color shape item corresponding
-        SetBottomMenuTab.onTabSelected(this, this, 0, lang)
+        SetBottomMenuTab.onTabSelected(this, this, 0)
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
@@ -176,10 +176,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                 LatLng(mLastKnownLocation!!.latitude,
                                 mLastKnownLocation!!.longitude), DEFAULT_ZOOM))
-
                     } else {
                         Log.w(TAG, "getLastLocation:exception", task.exception)
-                        Log.e(TAG, "Exception: %s", task.getException());
+                        Log.e(TAG, "Exception: %s", task.getException())
                         mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
                         mMap!!.getUiSettings().setMyLocationButtonEnabled(false);
                     }
@@ -205,7 +204,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         // Set the count, handling cases where less than 5 entries are returned.
                         val count : Int
                         if (likelyPlaces.getCount() < M_MAX_ENTRIES) {
-                            count = likelyPlaces.getCount();
+                            count = likelyPlaces.getCount()
                         } else {
                             count = M_MAX_ENTRIES
                         }
@@ -231,7 +230,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
 
                         // Release the place likelihood buffer, to avoid memory leaks.
-                        likelyPlaces.release();
+                        likelyPlaces.release()
 
                         // Show a dialog offering the user the list of likely places, and add a
                         // marker at the selected place.

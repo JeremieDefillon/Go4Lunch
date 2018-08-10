@@ -55,15 +55,6 @@ class FragmentUnitTest {
         testFragment(fragment, flContainer!!, R.id.signIn)
     }
 
-    /**
-     * to Test if MapViewFragment does exist once instancied
-     */
-    @Test
-    fun testMapViewFragment() {
-        // Test if the MapView fragment is launched or not
-        val fragment = MapViewFragment.newInstance(this!!.mActivity!!)
-        testFragment(fragment, flContainer!!, R.id.mapView)
-    }
 
 
     /**

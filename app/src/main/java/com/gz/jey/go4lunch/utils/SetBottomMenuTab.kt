@@ -12,7 +12,7 @@ import com.gz.jey.go4lunch.R
 class SetBottomMenuTab{
 
     companion object {
-        fun onTabSelected(c: Context, v : AppCompatActivity, index: Int, lang: Int) {
+        fun onTabSelected(c: Context, v : AppCompatActivity, index: Int) {
             val map_i = v.findViewById(R.id.map_button_img) as ImageView
             val map_t = v.findViewById(R.id.map_button_txt) as TextView
             val list_i = v.findViewById(R.id.list_button_img) as ImageView
@@ -23,13 +23,13 @@ class SetBottomMenuTab{
             val black = ContextCompat.getColor(c, R.color.colorBlack)
 
             map_i.setImageDrawable(changeDrawableColor(c, R.drawable.map, black))
-            map_t.setText(c.resources.getStringArray(R.array.map)[lang])
+            map_t.setText(c.resources.getString(R.string.map))
             map_t.setTextColor(black)
             list_i.setImageDrawable(changeDrawableColor(c, R.drawable.list, black))
-            list_t.setText(c.resources.getStringArray(R.array.restaurants)[lang])
+            list_t.setText(c.resources.getString(R.string.restaurants))
             list_t.setTextColor(black)
             people_i.setImageDrawable(changeDrawableColor(c, R.drawable.people, black))
-            people_t.setText(c.resources.getStringArray(R.array.workmates)[lang])
+            people_t.setText(c.resources.getString(R.string.workmates))
             people_t.setTextColor(black)
 
             when (index) {

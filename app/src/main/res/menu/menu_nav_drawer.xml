@@ -7,15 +7,15 @@
             android:checkableBehavior="single">
         <item android:id="@+id/restaurant_menu"
             android:icon="@drawable/restaurant_menu"
-            android:title="@string/restaurant_menu_EN">
+            android:title="@string/restaurant_menu">
         </item>
         <item android:id="@+id/settings"
             android:icon="@drawable/settings"
-            android:title="@string/settings_EN">
+            android:title="@string/settings">
         </item>
         <item android:id="@+id/power_settings"
             android:icon="@drawable/power_settings"
-            android:title="@string/power_settings_EN">
+            android:title="@string/power_settings">
         </item>
     </group>
 
