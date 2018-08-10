@@ -18,6 +18,5 @@
             android:title="@string/power_settings">
         </item>
     </group>
-
 </menu>
 

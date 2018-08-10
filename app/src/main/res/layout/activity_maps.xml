@@ -41,6 +41,7 @@
                 tools:context=".activities.MapsActivity" />
         </RelativeLayout>
 
+
         <RelativeLayout
             android:id="@+id/current_position_button"
             android:layout_width="50dp"
