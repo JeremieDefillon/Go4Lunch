@@ -8,6 +8,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
             <RelativeLayout
+                android:id="@+id/map_button"
                 android:clickable="true"
                 android:layout_width="125dp"
                 android:layout_height="match_parent"
@@ -40,8 +41,8 @@
                 </LinearLayout>
             </RelativeLayout>
 
-
             <RelativeLayout
+                android:id="@+id/restaurants_button"
                 android:clickable="true"
                 android:layout_width="125dp"
                 android:layout_height="match_parent"
@@ -75,6 +76,7 @@
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/workmates_button"
                 android:clickable="true"
                 android:layout_width="125dp"
                 android:layout_height="match_parent"

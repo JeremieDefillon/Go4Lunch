@@ -1,9 +1,8 @@
 package com.gz.jey.go4lunch.utils
 
-class CheckIfTest {
+object CheckIfTest {
 
-    companion object {
-        private var isTheRunningTest: Boolean? = null
+    private var isTheRunningTest: Boolean? = null
 
         fun isRunningTest(test: String) : Boolean {
             if (null == isTheRunningTest) {
@@ -19,5 +18,4 @@ class CheckIfTest {
 
             return isTheRunningTest as Boolean
         }
-    }
 }

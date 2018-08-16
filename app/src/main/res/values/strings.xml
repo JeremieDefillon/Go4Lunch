@@ -33,7 +33,6 @@
 
     <!-- GOOGLE MAP -->
     <string name="title_activity_maps">Map</string>
-    <string name="google_maps_key">AIzaSyB2l1D02XIzEFmEecNFAwhe404tHaRS1Sw</string>
     <string name="current_position">Current Position</string>
     <string name="default_info_title">Current Position</string>
     <string name="default_info_snippet">Current Position</string>

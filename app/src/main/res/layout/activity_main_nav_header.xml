@@ -54,6 +54,7 @@
                     app:civ_border_color="@color/colorWhite"
                     />
 
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"

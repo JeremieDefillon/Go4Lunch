@@ -24,11 +24,11 @@ class AuthenticationTest {
     private var mActivity: MainActivity? = null
 
     /**
-     * The SetUp
+     * The setUp
      */
     @Before
-    fun SetUp() {
-        mActivity = mActivityRule.getActivity()
+    fun setUp() {
+        mActivity = mActivityRule.activity
     }
     /**
      * Testing authentication

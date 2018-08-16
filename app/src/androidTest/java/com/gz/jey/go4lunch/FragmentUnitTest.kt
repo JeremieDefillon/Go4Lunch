@@ -29,7 +29,7 @@ class FragmentUnitTest {
     private var flContainer: FrameLayout? = null
 
     /**
-     * The SetUp
+     * The setUp
      */
     @Before
     fun SetUp() {
@@ -64,7 +64,7 @@ class FragmentUnitTest {
      * Verify if the fragment view is in the expected container
      */
     private fun testFragment(fragment: Fragment, container: View, Gen: Int) {
-        mActivity!!.getSupportFragmentManager().beginTransaction().add(container.id, fragment).commitAllowingStateLoss()
+        mActivity!!.supportFragmentManager.beginTransaction().add(container.id, fragment).commitAllowingStateLoss()
         getInstrumentation().waitForIdleSync()
         val view = Objects.requireNonNull<View>(fragment.view).findViewById<View>(Gen)
         assertNotNull(view)

@@ -25,7 +25,7 @@ class NavDrawerTest {
     private var mDrawerLayout: DrawerLayout? = null
 
     /**
-     * The SetUp
+     * The setUp
      */
     @Before
     fun SetUp() {
