@@ -39,6 +39,11 @@ class MainActivity : AppCompatActivity(){
     var toolbar: Toolbar? = null
     var navigationView: NavigationView? = null
 
+    // FOR DATA
+    var lang = 1
+    var mDefaultLocation: LatLng? = null
+    var mLastKnownLocation: LatLng? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)

@@ -54,7 +54,7 @@ object SetBottomMenuTab{
             }
         }
 
-        private fun changeDrawableColor(context: Context, icon: Int, newColor: Int): Drawable {
+        fun changeDrawableColor(context: Context, icon: Int, newColor: Int): Drawable {
             val mDrawable = ContextCompat.getDrawable(context, icon)?.mutate() as Drawable
             mDrawable?.setColorFilter(newColor, PorterDuff.Mode.SRC_IN)
             return mDrawable

@@ -17,7 +17,6 @@ import kotlin.test.assertNotNull
 @RunWith(AndroidJUnit4::class)
 class RequestTest {
 
-
     @get:Rule
     val mActivityRule = ActivityTestRule<MainActivity>(MainActivity::class.java)
 

@@ -47,8 +47,6 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
     var mGeoDataClient : GeoDataClient? = null
     var mPlaceDetectionClient: PlaceDetectionClient? = null
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
-    private var mDefaultLocation: LatLng? = null
-    private var mLastKnownLocation: LatLng? = null
     var disposable : Disposable? = null
 
     private var currentPositionMarker : MarkerOptions? = null
@@ -143,7 +141,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
             } else {
                 mMap!!.isMyLocationEnabled = false
                 mMap!!.uiSettings.isMyLocationButtonEnabled = false
-                mLastKnownLocation = null
+                mainActivity!!.mLastKnownLocation = null
                 getLocationPermission()
             }
         } catch (e: SecurityException) {
@@ -157,7 +155,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
             .addOnCompleteListener(mainActivity!!) { task ->
                 if (task.isSuccessful && task.result != null) {
                     Log.d(TAG, " TASK SUCCESS")
-                    mLastKnownLocation = LatLng(task.result.latitude, task.result.longitude)
+                    mainActivity!!.mLastKnownLocation = LatLng(task.result.latitude, task.result.longitude)
                     showCurrentPlace()
                 } else {
                     Log.w("MAP LOCATION", "getLastLocation:exception", task.exception)
@@ -175,13 +173,13 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
 
         if (mLocationPermissionGranted) {
             mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    LatLng(mLastKnownLocation!!.latitude, mLastKnownLocation!!.longitude), DEFAULT_ZOOM))
+                    LatLng(mainActivity!!.mLastKnownLocation!!.latitude, mainActivity!!.mLastKnownLocation!!.longitude), DEFAULT_ZOOM))
 
             var ico : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.self_marker)
             ico = SetBottomMenuTab.changeBitmapColor(ico, Color.RED)
 
             mMap!!.addMarker(MarkerOptions()
-                    .position(mLastKnownLocation!!)
+                    .position(mainActivity!!.mLastKnownLocation!!)
                     .title("Position")
                     .icon(BitmapDescriptorFactory.fromBitmap(ico)))
 
@@ -193,7 +191,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
             // Add a default marker, because the user hasn't selected a place.
             mMap!!.addMarker(MarkerOptions()
                     .title(getString(R.string.default_info_title))
-                    .position(mDefaultLocation!!)
+                    .position(mainActivity!!.mDefaultLocation!!)
                     .snippet(getString(R.string.default_info_snippet)))
 
             // Prompt the user for permission.
@@ -209,8 +207,8 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
         when (req) {
             "place" -> {
                 val location : LatLng =
-                        if(mLastKnownLocation == null) mDefaultLocation!!
-                        else mLastKnownLocation!!
+                        if(mainActivity!!.mLastKnownLocation == null) mainActivity!!.mDefaultLocation!!
+                        else mainActivity!!.mLastKnownLocation!!
                         disposable = ApiStreams.streamFetchRestaurants(getString(R.string.google_maps_key), location, lang)
                         .subscribeWith(object : DisposableObserver<Place>(){
                             override fun onNext(place: Place) {

@@ -9,6 +9,8 @@
     <string name="sign_google">Se connecter via Google</string>
     <string name="sign_facebook">Se connecter via Facebook</string>
 
+    <string name="img_desc">photo</string>
+
     <string name="empty">Vide</string>
 
     <!-- RESULT SIGN IN -->
