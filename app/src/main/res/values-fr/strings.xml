@@ -4,14 +4,12 @@
     <!-- for the image Description -->
     <string name="app_icon">App Icon</string>
     <string name="main_background">Main Background</string>
-    <string name="search">Search</string>
+    <string name="search">Chercher</string>
 
-    <string name="sign_google">Sign in with Google</string>
-    <string name="sign_facebook">Sign in with Facebook</string>
+    <string name="sign_google">Se connecter via Google</string>
+    <string name="sign_facebook">Se connecter via Facebook</string>
 
-    <!-- FACEBOOK PURPOSE -->
-    <string name="facebook_application_id" translatable="false">287799998659997</string>
-    <string name="facebook_login_protocol_scheme" translatable="false" tools:ignore="UnusedResources">287799998659997</string>
+    <string name="empty">Vide</string>
 
     <!-- RESULT SIGN IN -->
     <string name="connection_succeed">Connection Succeed !</string>

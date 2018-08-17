@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources >
     <string name="app_name">Go4Lunch</string>
 
     <!-- for the image Description -->
@@ -9,9 +9,8 @@
     <string name="sign_google">Sign in with Google</string>
     <string name="sign_facebook">Sign in with Facebook</string>
 
-    <!-- FACEBOOK PURPOSE -->
-    <string name="facebook_application_id" translatable="false">287799998659997</string>
-    <string name="facebook_login_protocol_scheme" translatable="false" tools:ignore="UnusedResources">287799998659997</string>
+    <string name="empty">Empty</string>
+
 
     <!-- RESULT SIGN IN -->
     <string name="connection_succeed">Connection Succeed !</string>

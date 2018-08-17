@@ -14,10 +14,11 @@ interface ApiService {
     //private val privas: LatLng = LatLng(44.735269, 4.599038999999948)
     @GET("maps/api/place/textsearch/json?")
     fun getRestaurants(
-            @Query("type") type: String,
-            @Query("location") location: String,
-            @Query("radius") radius: String,
-            @Query("language") language: String,
-            @Query("key") key: String
+        @Query("type") type: String,
+        @Query("location") location: String,
+        @Query("radius") radius: String,
+        @Query("rankBy") distance: String,
+        @Query("language") language: String,
+        @Query("key") key: String
     ) : Observable<Place>
 }

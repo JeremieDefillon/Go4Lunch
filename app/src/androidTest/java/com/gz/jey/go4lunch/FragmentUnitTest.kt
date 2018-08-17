@@ -7,6 +7,7 @@ import android.support.test.runner.AndroidJUnit4
 import android.support.v4.app.Fragment
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.RelativeLayout
 import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.fragments.MapViewFragment
 import com.gz.jey.go4lunch.fragments.SignInFragment
@@ -26,14 +27,14 @@ class FragmentUnitTest {
     val mActivityRule = ActivityTestRule<MainActivity>(MainActivity::class.java)
 
     private var mActivity: MainActivity? = null
-    private var flContainer: FrameLayout? = null
+    private var flContainer: RelativeLayout? = null
 
     /**
      * The setUp
      */
     @Before
     fun SetUp() {
-        mActivity = mActivityRule.getActivity()
+        mActivity = mActivityRule.activity
         flContainer = mActivity!!.findViewById(R.id.fragmentContainer)
     }
 
@@ -51,9 +52,20 @@ class FragmentUnitTest {
     @Test
     fun testSignInFragment() {
         // Test if the Main fragment is launched or not
-        val fragment = SignInFragment.newInstance(this!!.mActivity!!)
+        val fragment = SignInFragment.newInstance(this.mActivity!!)
         testFragment(fragment, flContainer!!, R.id.signIn)
     }
+
+    /**
+     * to Test if MapViewFragment does exist once instancied
+     */
+    @Test
+    fun testMapViewFragment() {
+        // Test if the Main fragment is launched or not
+        val fragment = MapViewFragment.newInstance(this.mActivity!!)
+        testFragment(fragment, flContainer!!, R.id.map)
+    }
+
 
 
 

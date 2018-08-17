@@ -17,7 +17,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.fragments.MapViewFragment
+import com.gz.jey.go4lunch.fragments.RestaurantsFragment
 import com.gz.jey.go4lunch.fragments.SignInFragment
+import com.gz.jey.go4lunch.fragments.WorkmatesFragment
 import com.gz.jey.go4lunch.utils.CheckIfTest
 import com.gz.jey.go4lunch.utils.SetBottomMenuTab
 import io.reactivex.disposables.Disposable
@@ -27,7 +29,9 @@ class MainActivity : AppCompatActivity(){
 
     private val TAG = "MainActivity"
     var signInFragment: SignInFragment? = null
-    var mapViewFragment: MapViewFragment? = null
+    private var mapViewFragment: MapViewFragment? = null
+    private var restaurantsFragment: RestaurantsFragment? = null
+    private var workmatesFragment: WorkmatesFragment? = null
 
     // FOR DESIGN
     var coordinatorLayout: CoordinatorLayout? = null
@@ -40,7 +44,6 @@ class MainActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_main)
         this.setBottomButtonClick()
-        this.setFragments()
         this.setDrawerLayout()
         this.setNavigationView()
 
@@ -58,13 +61,6 @@ class MainActivity : AppCompatActivity(){
                 false -> setSignInFragment()
                 else -> setSignInFragment()
             }
-    }
-
-    /**
-     * Configure Bottom Bar Buttons Click
-     */
-    private fun setFragments(){
-        this.signInFragment = SignInFragment.newInstance(this)
     }
 
     /**
@@ -110,6 +106,7 @@ class MainActivity : AppCompatActivity(){
      * Set Sign In
      */
     private fun setSignInFragment(){
+        this.signInFragment = SignInFragment.newInstance(this)
         this.moveFragment(this.signInFragment!!)
     }
 
@@ -119,6 +116,7 @@ class MainActivity : AppCompatActivity(){
     private fun setMapViewFragment(){
         Log.d(TAG,"SET MAP VIEW FRAGMENT")
         this.mapViewFragment = MapViewFragment.newInstance(this)
+
         SetBottomMenuTab.onTabSelected(this, this, 0)
         this.moveFragment(this.mapViewFragment!!)
     }
@@ -127,14 +125,18 @@ class MainActivity : AppCompatActivity(){
      * Set Restaurants
      */
     private fun setRestaurantsFragment(){
+        this.restaurantsFragment = RestaurantsFragment.newInstance(this)
         SetBottomMenuTab.onTabSelected(this, this, 1)
+        this.moveFragment(this.restaurantsFragment!!)
     }
 
     /**
      * Set Workmates
      */
     private fun setWorkmatesFragment(){
+        this.workmatesFragment = WorkmatesFragment.newInstance(this)
         SetBottomMenuTab.onTabSelected(this, this, 2)
+        this.moveFragment(this.workmatesFragment!!)
     }
 
     /**

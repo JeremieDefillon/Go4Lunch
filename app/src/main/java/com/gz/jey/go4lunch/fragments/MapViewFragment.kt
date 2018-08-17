@@ -1,7 +1,6 @@
 package com.gz.jey.go4lunch.fragments
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -52,7 +51,6 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
     private var mLastKnownLocation: LatLng? = null
     var disposable : Disposable? = null
 
-    private var mContext : Context? = null
     private var currentPositionMarker : MarkerOptions? = null
     private var currentLocationMarker : Marker? = null
 
@@ -63,10 +61,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
      * @return View
      */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.map_view, container, false)
-        mContext = mainActivity
-
-        return view
+        return inflater.inflate(R.layout.map_view, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

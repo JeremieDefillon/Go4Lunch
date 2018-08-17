@@ -29,12 +29,13 @@ object ApiStreams {
     fun streamFetchRestaurants(key: String, loc: LatLng , lang: Int): Observable<Place> {
         val location = loc.latitude.toString()+","+loc.longitude.toString()
         val radius = "10000"
+        val rankby = "distance"
         val language = if (lang==1) "fr" else "en"
         val type = "restaurant"
 
         val apiService = this.retrofit.create(ApiService::class.java)
 
-        return apiService.getRestaurants(type, location, radius, language, key)
+        return apiService.getRestaurants(type, location, radius, rankby, language, key)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(20, TimeUnit.SECONDS)
