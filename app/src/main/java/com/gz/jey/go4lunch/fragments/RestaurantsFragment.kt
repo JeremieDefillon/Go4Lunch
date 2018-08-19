@@ -19,6 +19,7 @@ import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.models.Place
 import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.ApiStreams
+import com.gz.jey.go4lunch.utils.ItemClickSupport
 import com.gz.jey.go4lunch.views.RestaurantsAdapter
 import io.reactivex.disposables.Disposable
 import io.reactivex.observers.DisposableObserver
@@ -46,6 +47,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
      */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mView = inflater.inflate(R.layout.recycler_view_fragment, container, false)
+        mainActivity = activity as MainActivity
         recyclerView = mView!!.findViewById(R.id.recycler_view)
         swipeRefreshLayout = mView!!.findViewById(R.id.swipe_container)
         return mView
@@ -55,6 +57,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         super.onViewCreated(view, savedInstanceState)
         setRecyclerView()
         setSwipeRefreshLayout()
+        setOnClickRecyclerView()
         executeHttpRequestWithRetrofit("place")
     }
 
@@ -64,19 +67,17 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
     private fun setRecyclerView() {
         results = ArrayList()
         // Create newsAdapter passing in the sample user data
-        restaurantsAdapter =
-                RestaurantsAdapter(getString(R.string.google_api_key),
+        restaurantsAdapter = RestaurantsAdapter(
+                        getString(R.string.google_api_key),
                         mainActivity!!.mLastKnownLocation!!,
                         results!!,
                         Glide.with(this),
                         this)
 
-
         // Attach the restaurantsAdapter to the recycler-view to populate items
         recyclerView!!.adapter = restaurantsAdapter
         // Set layout manager to position the items
-        recyclerView!!.layoutManager =
-                LinearLayoutManager(activity)
+        recyclerView!!.layoutManager = LinearLayoutManager(activity)
     }
 
     /**
@@ -84,6 +85,21 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
      */
     private fun setSwipeRefreshLayout() {
         swipeRefreshLayout!!.setOnRefreshListener { executeHttpRequestWithRetrofit("place") }
+    }
+
+    // -----------------
+    // ACTION
+    // -----------------
+
+    /**
+     * to Set the onClick function from items in RecyclerView
+     */
+    private fun setOnClickRecyclerView() {
+        ItemClickSupport.addTo(recyclerView!!, R.layout.restaurant_item)
+                .setOnItemClickListener { recyclerView, position, v ->
+                    mainActivity!!.restaurantDetails = restaurantsAdapter!!.getRestaurants(position)
+                    mainActivity!!.setDetailsRestaurant()
+                }
     }
 
     // -------------------

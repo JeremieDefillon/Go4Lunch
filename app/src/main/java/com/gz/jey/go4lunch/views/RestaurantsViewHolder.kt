@@ -18,6 +18,7 @@ import com.google.maps.android.SphericalUtil
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.ApiPhoto
+import com.gz.jey.go4lunch.utils.CalculateRate
 import com.gz.jey.go4lunch.utils.SetBottomMenuTab
 import java.lang.Math.round
 import java.lang.ref.WeakReference
@@ -74,7 +75,7 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
         this.distance!!.text = getDistance(dist)
         this.workmatesAmount!!.text = "(0)"
         this.workmatesIcon!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.perm_identity, Color.BLACK))
-        when(getRateOn3(res.rating)){
+        when(CalculateRate.getRateOn3(res.rating)){
             1 -> {this.firstStar!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
                 this.firstStar!!.visibility = VISIBLE}
             2 -> {this.firstStar!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
@@ -96,10 +97,6 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
 
 
         callbackWeakRef = WeakReference(callback)
-    }
-
-    private fun getRateOn3(rate : Double) : Int{
-        return round((rate/5.5)*3).toInt()
     }
 
     private fun getDistance(dist : Double) : String{

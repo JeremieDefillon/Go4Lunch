@@ -5,7 +5,10 @@ import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import com.gz.jey.go4lunch.R
 
@@ -23,34 +26,38 @@ object SetBottomMenuTab{
             val black = ContextCompat.getColor(c, R.color.colorBlack)
 
             map_i.setImageDrawable(changeDrawableColor(c, R.drawable.map, black))
-            map_t.setText(c.resources.getString(R.string.map))
+            map_t.text = c.resources.getString(R.string.map)
             map_t.setTextColor(black)
             list_i.setImageDrawable(changeDrawableColor(c, R.drawable.list, black))
-            list_t.setText(c.resources.getString(R.string.restaurants))
+            list_t.text = c.resources.getString(R.string.restaurants)
             list_t.setTextColor(black)
             people_i.setImageDrawable(changeDrawableColor(c, R.drawable.people, black))
-            people_t.setText(c.resources.getString(R.string.workmates))
+            people_t.text = c.resources.getString(R.string.workmates)
             people_t.setTextColor(black)
 
             when (index) {
                 0 -> {
+                    v.findViewById<LinearLayout>(R.id.bottom_menu).visibility = VISIBLE
                     map_i.setColorFilter(prim)
                     map_t.setTextColor(prim)
                     list_i.setColorFilter(black)
                     people_i.setColorFilter(black)
                 }
                 1 -> {
+                    v.findViewById<LinearLayout>(R.id.bottom_menu).visibility = VISIBLE
                     list_i.setColorFilter(prim)
                     list_t.setTextColor(prim)
                     map_i.setColorFilter(black)
                     people_i.setColorFilter(black)
                 }
                 2 -> {
+                    v.findViewById<LinearLayout>(R.id.bottom_menu).visibility = VISIBLE
                     people_i.setColorFilter(prim)
                     people_t.setTextColor(prim)
                     map_i.setColorFilter(black)
                     list_i.setColorFilter(black)
                 }
+                3-> v.findViewById<LinearLayout>(R.id.bottom_menu).visibility = GONE
             }
         }
 

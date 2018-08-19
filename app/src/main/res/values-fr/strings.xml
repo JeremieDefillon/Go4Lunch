@@ -45,4 +45,10 @@
     <string name="settings">Préférences</string>
     <string name="power_settings">Se Déconnecter</string>
 
+    <!-- RESTAURANT DETAILS BUTTON -->
+    <string name="call">APPELER</string>
+    <string name="like">FAVORIS</string>
+    <string name="website">SITE WEB</string>
+
+
 </resources>

@@ -7,6 +7,7 @@ import android.support.design.widget.NavigationView
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.widget.DrawerLayout
+import android.support.v7.app.ActionBar
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
@@ -16,13 +17,12 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.gz.jey.go4lunch.R
-import com.gz.jey.go4lunch.fragments.MapViewFragment
-import com.gz.jey.go4lunch.fragments.RestaurantsFragment
-import com.gz.jey.go4lunch.fragments.SignInFragment
-import com.gz.jey.go4lunch.fragments.WorkmatesFragment
+import com.gz.jey.go4lunch.fragments.*
+import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.CheckIfTest
 import com.gz.jey.go4lunch.utils.SetBottomMenuTab
 import io.reactivex.disposables.Disposable
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(){
@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity(){
     private var mapViewFragment: MapViewFragment? = null
     private var restaurantsFragment: RestaurantsFragment? = null
     private var workmatesFragment: WorkmatesFragment? = null
+    private var detailsFragment: RestaurantDetailsFragment? = null
 
     // FOR DESIGN
     var coordinatorLayout: CoordinatorLayout? = null
@@ -43,6 +44,7 @@ class MainActivity : AppCompatActivity(){
     var lang = 1
     var mDefaultLocation: LatLng? = null
     var mLastKnownLocation: LatLng? = null
+    var restaurantDetails: Result? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?){
@@ -119,9 +121,11 @@ class MainActivity : AppCompatActivity(){
      * Set MapView
      */
     private fun setMapViewFragment(){
+        invalidateOptionsMenu()
+        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
+        setDrawerLayout()
         Log.d(TAG,"SET MAP VIEW FRAGMENT")
         this.mapViewFragment = MapViewFragment.newInstance(this)
-
         SetBottomMenuTab.onTabSelected(this, this, 0)
         this.moveFragment(this.mapViewFragment!!)
     }
@@ -130,6 +134,9 @@ class MainActivity : AppCompatActivity(){
      * Set Restaurants
      */
     private fun setRestaurantsFragment(){
+        invalidateOptionsMenu()
+        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
+        setDrawerLayout()
         this.restaurantsFragment = RestaurantsFragment.newInstance(this)
         SetBottomMenuTab.onTabSelected(this, this, 1)
         this.moveFragment(this.restaurantsFragment!!)
@@ -139,9 +146,24 @@ class MainActivity : AppCompatActivity(){
      * Set Workmates
      */
     private fun setWorkmatesFragment(){
+        invalidateOptionsMenu()
+        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
+        setDrawerLayout()
         this.workmatesFragment = WorkmatesFragment.newInstance(this)
         SetBottomMenuTab.onTabSelected(this, this, 2)
         this.moveFragment(this.workmatesFragment!!)
+    }
+
+    /**
+     * Set Restaurants
+     */
+    fun setDetailsRestaurant(){
+        invalidateOptionsMenu()
+        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
+        SetBottomMenuTab.onTabSelected(this, this, 3)
+        this.moveFragment(this.detailsFragment!!)
     }
 
     /**
@@ -162,7 +184,7 @@ class MainActivity : AppCompatActivity(){
         if(message == getString(R.string.connection_succeed))
             setMapViewFragment()
 
-        coordinatorLayout = findViewById(R.id.main_activity_coordinator_layout)
+        coordinatorLayout = this.findViewById(R.id.main_activity_coordinator_layout)
         Snackbar.make(coordinatorLayout!!, message, Snackbar.LENGTH_SHORT).show()
     }
 
