@@ -27,7 +27,8 @@ object ApiStreams {
 
     // method to call and pass the request via an observable for the GooglePlace API
     fun streamFetchRestaurants(key: String, loc: LatLng , lang: Int): Observable<Place> {
-        val location = loc.latitude.toString()+","+loc.longitude.toString()
+        var location = loc.latitude.toString()+","+loc.longitude.toString()
+        //location = "45.750000,4.850000"
         val radius = "10000"
         val rankby = "distance"
         val language = if (lang==1) "fr" else "en"

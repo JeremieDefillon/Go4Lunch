@@ -45,7 +45,7 @@ class RestaurantsAdapter
      * UPDATE VIEW HOLDER WITH NEWS
      */
     override fun onBindViewHolder(viewHolder: RestaurantsViewHolder, position: Int) {
-        viewHolder.updateRestaurants(this.key, context!!, this.startPosition, this.results[position], this.glide, this.callback)
+        viewHolder.updateRestaurants(this.key, context!!, this.startPosition, this.results[position], this.callback)
     }
 
     /**

@@ -82,7 +82,6 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
         // Construct a FusedLocationProviderClient.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mainActivity!!.applicationContext)
 
-        setOnClickCurrentPosition()
         updateLocationUI()
     }
 
@@ -90,12 +89,6 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
         super.onDestroy()
         this.disposeWhenDestroy()
     }
-
-    private fun setOnClickCurrentPosition(){
-        val currentPositionButton = mainActivity!!.findViewById<RelativeLayout>(R.id.current_position_button)
-        currentPositionButton.setOnClickListener { getDeviceLocation() }
-    }
-
 
     private fun getLocationPermission() {
         /*

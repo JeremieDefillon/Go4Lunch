@@ -12,6 +12,8 @@
     <string name="img_desc">photo</string>
 
     <string name="empty">Vide</string>
+    <string name="noRestaurantFound">Aucun restaurant trouvé aux alentours</string>
+    <string name="inLoading">Chargement …</string>
 
     <!-- RESULT SIGN IN -->
     <string name="connection_succeed">Connection Succeed !</string>

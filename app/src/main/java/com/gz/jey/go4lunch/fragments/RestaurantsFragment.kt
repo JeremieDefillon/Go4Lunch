@@ -1,6 +1,5 @@
 package com.gz.jey.go4lunch.fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
@@ -9,9 +8,10 @@ import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
-import butterknife.BindView
-import butterknife.ButterKnife
+import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.google.android.gms.maps.model.LatLng
 import com.gz.jey.go4lunch.R
@@ -25,6 +25,8 @@ import io.reactivex.observers.DisposableObserver
 import java.util.*
 
 class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
+
+    private var mView : View? = null
 
     // FOR DESIGN
     private var recyclerView: RecyclerView? = null
@@ -43,10 +45,10 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
      * @return View
      */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view= inflater.inflate(R.layout.recycler_view_fragment, container, false)
-        recyclerView = mainActivity!!.findViewById(R.id.recycler_view)
-        swipeRefreshLayout = mainActivity!!.findViewById(R.id.swipe_container)
-        return view
+        mView = inflater.inflate(R.layout.recycler_view_fragment, container, false)
+        recyclerView = mView!!.findViewById(R.id.recycler_view)
+        swipeRefreshLayout = mView!!.findViewById(R.id.swipe_container)
+        return mView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -63,10 +65,15 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         results = ArrayList()
         // Create newsAdapter passing in the sample user data
         restaurantsAdapter =
-                RestaurantsAdapter(getString(R.string.google_api_key), mainActivity!!.mLastKnownLocation!!, results!!, Glide.with(this), this)
-        // Attach the restaurantsAdapter to the recyclerview to populate items
-        recyclerView!!.adapter =
-                restaurantsAdapter
+                RestaurantsAdapter(getString(R.string.google_api_key),
+                        mainActivity!!.mLastKnownLocation!!,
+                        results!!,
+                        Glide.with(this),
+                        this)
+
+
+        // Attach the restaurantsAdapter to the recycler-view to populate items
+        recyclerView!!.adapter = restaurantsAdapter
         // Set layout manager to position the items
         recyclerView!!.layoutManager =
                 LinearLayoutManager(activity)
@@ -117,7 +124,10 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         results!!.addAll(place.results)
 
         if (results!!.size != 0) {
+            mView!!.findViewById<TextView>(R.id.no_result_text).visibility = GONE
             restaurantsAdapter!!.notifyDataSetChanged()
+        }else{
+            view!!.findViewById<TextView>(R.id.no_result_text).visibility = VISIBLE
         }
         swipeRefreshLayout!!.isRefreshing = false
     }

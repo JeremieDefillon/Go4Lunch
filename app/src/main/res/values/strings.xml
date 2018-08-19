@@ -12,6 +12,8 @@
     <string name="img_desc">photo</string>
 
     <string name="empty">Empty</string>
+    <string name="noRestaurantFound">Any restaurant found around</string>
+    <string name="inLoading">Loading …</string>
 
 
     <!-- RESULT SIGN IN -->
