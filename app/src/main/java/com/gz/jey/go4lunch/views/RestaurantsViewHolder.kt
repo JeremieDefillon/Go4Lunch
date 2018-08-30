@@ -8,19 +8,15 @@ import android.os.Build
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.view.View
-import android.view.View.VISIBLE
 import android.widget.ImageView
 import android.widget.TextView
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.SphericalUtil
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.ApiPhoto
 import com.gz.jey.go4lunch.utils.CalculateRate
-import com.gz.jey.go4lunch.utils.SetBottomMenuTab
-import java.lang.Math.round
+import com.gz.jey.go4lunch.utils.SetImageColor
 import java.lang.ref.WeakReference
 
 class RestaurantsViewHolder
@@ -69,25 +65,28 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
 
         this.address!!.text = res.formattedAddress
         this.name!!.text = res.name
-        this.openTime!!.text = if(res.openingHours==null) "" else if(res.openingHours.openNow) "Open" else "Closed"
+        this.openTime!!.text = if(res.openingHours==null || res.openingHours.openNow==null) "" else if(res.openingHours.openNow) "Open" else "Closed"
         setTime(context, this.openTime!!.text as String)
         val dist = SphericalUtil.computeDistanceBetween(startLatLng, LatLng(res.geometry.location.lat, res.geometry.location.lng))
         this.distance!!.text = getDistance(dist)
         this.workmatesAmount!!.text = "(0)"
-        this.workmatesIcon!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.perm_identity, Color.BLACK))
+        this.workmatesIcon!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.perm_identity, Color.BLACK))
         when(CalculateRate.getRateOn3(res.rating)){
-            1 -> {this.firstStar!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.firstStar!!.visibility = VISIBLE}
-            2 -> {this.firstStar!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.firstStar!!.visibility = VISIBLE
-                this.secondStar!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.secondStar!!.visibility = VISIBLE}
-            3 -> {this.firstStar!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.firstStar!!.visibility = VISIBLE
-                this.secondStar!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.secondStar!!.visibility = VISIBLE
-                this.thirdStar!!.setImageDrawable(SetBottomMenuTab.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.thirdStar!!.visibility = VISIBLE}
+            1 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
+                this.firstStar!!.visibility = View.VISIBLE
+            }
+            2 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
+                this.firstStar!!.visibility = View.VISIBLE
+                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
+                this.secondStar!!.visibility = View.VISIBLE
+            }
+            3 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
+                this.firstStar!!.visibility = View.VISIBLE
+                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
+                this.secondStar!!.visibility = View.VISIBLE
+                this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
+                this.thirdStar!!.visibility = View.VISIBLE
+            }
         }
 
         val imgLink = ApiPhoto.getPhotoURL(100, res.photos[0].photoReference, key)

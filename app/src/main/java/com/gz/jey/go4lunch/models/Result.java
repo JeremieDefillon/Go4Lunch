@@ -1,6 +1,7 @@
 
 package com.gz.jey.go4lunch.models;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -44,7 +45,7 @@ public class Result {
     @Expose
     private List<String> types = null;
 
-    private List<Workmates> workmates = null;
+    private List<Contact> workmates = new ArrayList();
 
     public String getFormattedAddress() {
         return formattedAddress;
@@ -142,11 +143,11 @@ public class Result {
         this.types = types;
     }
 
-    public List<Workmates> getWorkmates() {
+    public List<Contact> getWorkmates() {
         return workmates;
     }
 
-    public void setWorkmatess(List<Workmates> workmates) {
+    public void setWorkmates(List<Contact> workmates) {
         this.workmates = workmates;
     }
 

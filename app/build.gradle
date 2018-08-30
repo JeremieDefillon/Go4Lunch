@@ -23,6 +23,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+    }
 }
 
 dependencies {
@@ -63,13 +73,14 @@ dependencies {
 
     // FireBase
     implementation 'com.google.firebase:firebase-core:16.0.1'
+    implementation 'com.google.firebase:firebase-firestore:17.1.0'
 
     // FireBase UI
     implementation 'com.firebaseui:firebase-ui-common:4.0.1'
     implementation 'com.firebaseui:firebase-ui-auth:4.0.1'
 
     // FACEBOOK LOGIN SUPPORT
-    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    implementation 'com.facebook.android:facebook-android-sdk:4.35.0'
 
     // Google Map Service
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
@@ -77,6 +88,9 @@ dependencies {
     // Google Place Service
     implementation 'com.google.android.gms:play-services-places:15.0.1'
     implementation 'com.google.android.gms:play-services-location:15.0.1'
+
+    // Google People Service
+    implementation 'com.google.apis:google-api-services-people:v1-rev330-1.25.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

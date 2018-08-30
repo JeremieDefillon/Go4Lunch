@@ -31,7 +31,6 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
 
     // FOR DESIGN
     private var recyclerView: RecyclerView? = null
-    private var swipeRefreshLayout: SwipeRefreshLayout? = null
 
     var mainActivity: MainActivity? = null
     private var disposable: Disposable? = null
@@ -49,14 +48,12 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         mView = inflater.inflate(R.layout.recycler_view_fragment, container, false)
         mainActivity = activity as MainActivity
         recyclerView = mView!!.findViewById(R.id.recycler_view)
-        swipeRefreshLayout = mView!!.findViewById(R.id.swipe_container)
         return mView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setRecyclerView()
-        setSwipeRefreshLayout()
         setOnClickRecyclerView()
         executeHttpRequestWithRetrofit("place")
     }
@@ -80,13 +77,6 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         recyclerView!!.layoutManager = LinearLayoutManager(activity)
     }
 
-    /**
-     * to set the SwipeRefreshLayout Listeners
-     */
-    private fun setSwipeRefreshLayout() {
-        swipeRefreshLayout!!.setOnRefreshListener { executeHttpRequestWithRetrofit("place") }
-    }
-
     // -----------------
     // ACTION
     // -----------------
@@ -96,8 +86,8 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
      */
     private fun setOnClickRecyclerView() {
         ItemClickSupport.addTo(recyclerView!!, R.layout.restaurant_item)
-                .setOnItemClickListener { recyclerView, position, v ->
-                    mainActivity!!.restaurantDetails = restaurantsAdapter!!.getRestaurants(position)
+                .setOnItemClickListener { _, position, _ ->
+                    mainActivity!!.restaurantID = mainActivity!!.place!!.results[position].id
                     mainActivity!!.setDetailsRestaurant()
                 }
     }
@@ -132,6 +122,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
      * called while request get back models
      */
     private fun UpdateUI(place: Place) {
+        mainActivity!!.place = place
         if (results != null)
             results!!.clear()
         else
@@ -139,13 +130,25 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
 
         results!!.addAll(place.results)
 
+        for(c in mainActivity!!.contacts){
+            if(!c.whereEat.isEmpty()){
+                for(r in place!!.results){
+                    if(r.id==c.whereEat)
+                        if(!r.workmates.contains(c)) {
+                            r.workmates.add(c)
+                            break
+                        }
+                }
+            }
+        }
+
         if (results!!.size != 0) {
             mView!!.findViewById<TextView>(R.id.no_result_text).visibility = GONE
             restaurantsAdapter!!.notifyDataSetChanged()
         }else{
             view!!.findViewById<TextView>(R.id.no_result_text).visibility = VISIBLE
+            view!!.findViewById<TextView>(R.id.no_result_text).text = getString(R.string.none_restaurant)
         }
-        swipeRefreshLayout!!.isRefreshing = false
     }
 
     /**

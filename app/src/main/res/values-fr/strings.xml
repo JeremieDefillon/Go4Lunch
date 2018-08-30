@@ -11,6 +11,9 @@
 
     <string name="img_desc">photo</string>
 
+    <string name="no_username_found">Pas de nom trouvé</string>
+    <string name="no_email_found">Pas d\'email trouvé</string>
+
     <string name="empty">Vide</string>
     <string name="noRestaurantFound">Aucun restaurant trouvé aux alentours</string>
     <string name="inLoading">Chargement …</string>
@@ -50,5 +53,9 @@
     <string name="like">FAVORIS</string>
     <string name="website">SITE WEB</string>
 
+    <!-- APP DICTIONNARY -->
+    <string name="go_eat">va manger à</string>
+    <string name="doesnt_chosen">n\'a pas choisi où manger</string>
+    <string name="is_joining">rejoint !</string>
 
 </resources>

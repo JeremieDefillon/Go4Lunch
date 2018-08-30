@@ -13,7 +13,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RelativeLayout
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.places.GeoDataClient
@@ -26,19 +25,19 @@ import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.models.Place
 import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.ApiStreams
-import com.gz.jey.go4lunch.utils.SetBottomMenuTab
+import com.gz.jey.go4lunch.utils.SetImageColor
 import io.reactivex.disposables.Disposable
 import io.reactivex.observers.DisposableObserver
 import java.util.*
 
-class MapViewFragment : Fragment(), OnMapReadyCallback{
+class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private val TAG = "MAP FRAGMENT"
     var mainActivity: MainActivity? = null
     var mSupportMapFragment: SupportMapFragment? = null
     var mMap: GoogleMap? = null
 
-    private val DEFAULT_ZOOM = 16f
+    private val DEFAULT_ZOOM = 12f
     private val M_MAX_ENTRIES = 10
     private val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 34
 
@@ -72,6 +71,9 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
         Log.d(TAG,"ON MAP READY")
         mMap = map
         mMap!!.setMapStyle(MapStyleOptions.loadRawResourceStyle(activity, R.raw.map_style))
+
+        mMap!!.setOnMarkerClickListener(this)
+
 
         // Construct a GeoDataClient.
         mGeoDataClient = Places.getGeoDataClient(mainActivity!!.applicationContext)
@@ -147,7 +149,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
             mFusedLocationProviderClient.lastLocation
             .addOnCompleteListener(mainActivity!!) { task ->
                 if (task.isSuccessful && task.result != null) {
-                    Log.d(TAG, " TASK SUCCESS")
+                    Log.d(TAG, " TASK DEVICE LOCATION SUCCESS")
                     mainActivity!!.mLastKnownLocation = LatLng(task.result.latitude, task.result.longitude)
                     showCurrentPlace()
                 } else {
@@ -169,7 +171,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
                     LatLng(mainActivity!!.mLastKnownLocation!!.latitude, mainActivity!!.mLastKnownLocation!!.longitude), DEFAULT_ZOOM))
 
             var ico : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.self_marker)
-            ico = SetBottomMenuTab.changeBitmapColor(ico, Color.RED)
+            ico = SetImageColor.changeBitmapColor(ico, Color.RED)
 
             mMap!!.addMarker(MarkerOptions()
                     .position(mainActivity!!.mLastKnownLocation!!)
@@ -226,15 +228,28 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
 
     private fun updateRestaurantsMarkers(place : Place){
         Log.d("PLACE" , place.status.toString())
+        mainActivity!!.place=place
         val restaurants = ArrayList<Result>()
         restaurants.clear()
         restaurants.addAll(place.results)
+
+        for(c in mainActivity!!.contacts){
+            if(!c.whereEat.isEmpty()){
+                for(r in place!!.results){
+                    if(r.id==c.whereEat)
+                        if(!r.workmates.contains(c)) {
+                            r.workmates.add(c)
+                            break
+                        }
+                }
+            }
+        }
 
         val iconIn : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.someone_in)
         val iconNone : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.none_in)
 
         for (rest : Result in restaurants){
-            val ico = if(rest.workmates!=null && rest.workmates.isNotEmpty())iconIn else iconNone
+            val ico = if(rest.workmates !=null && rest.workmates.isNotEmpty())iconIn else iconNone
 
             val location = LatLng(rest.geometry.location.lat, rest.geometry.location.lng)
             mMap!!.addMarker(MarkerOptions()
@@ -242,6 +257,17 @@ class MapViewFragment : Fragment(), OnMapReadyCallback{
                     .title(rest.name)
                     .icon(BitmapDescriptorFactory.fromBitmap(ico)))
         }
+    }
+
+    override fun onMarkerClick(p0: Marker?) : Boolean {
+        for((index,value) in mainActivity!!.place!!.results.withIndex()){
+            if(mainActivity!!.place!!.results[index].name == p0!!.title){
+               mainActivity!!.restaurantID = mainActivity!!.place!!.results[index].id
+               break
+            }
+        }
+        mainActivity!!.setDetailsRestaurant()
+        return true
     }
 
     companion object {

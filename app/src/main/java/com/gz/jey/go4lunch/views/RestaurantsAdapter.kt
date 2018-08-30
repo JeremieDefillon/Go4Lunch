@@ -4,17 +4,18 @@ import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import com.gz.jey.go4lunch.R
-import com.gz.jey.go4lunch.models.Result
 import com.bumptech.glide.RequestManager
 import com.google.android.gms.maps.model.LatLng
+import com.gz.jey.go4lunch.R
+import com.gz.jey.go4lunch.models.Result
 
 class RestaurantsAdapter
 /**
  * @param results List<Result>
  * @param glide RequestManager
  * @param callback Listener */
-(// FOR DATA
+(
+        // FOR DATA
         private val key: String,
         private val startPosition: LatLng,
         private val results: List<Result>,
@@ -24,7 +25,7 @@ class RestaurantsAdapter
 
     interface Listener
 
-    private var context : Context? = null
+    private var context: Context? = null
 
     /**
      * @param parent ViewGroup

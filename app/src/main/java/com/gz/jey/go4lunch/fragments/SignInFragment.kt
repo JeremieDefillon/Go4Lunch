@@ -18,6 +18,7 @@ class SignInFragment : Fragment() {
 
     var mainActivity: MainActivity? = null
     val rcSignIn : Int = 123
+    private val SIGN_IN_TASK = 98
 
     companion object {
         /**
@@ -54,6 +55,7 @@ class SignInFragment : Fragment() {
                                         AuthUI.IdpConfig.FacebookBuilder().build()))
                         .setIsSmartLockEnabled(false, true)
                         .setLogo(R.drawable.big_logo)
+
                         .build(),
                 rcSignIn)
     }
@@ -83,6 +85,7 @@ class SignInFragment : Fragment() {
         if (requestCode == mainActivity?.signInFragment?.rcSignIn ?: Int) {
             if (resultCode == Activity.RESULT_OK) {
                 // SUCCESS
+                mainActivity?.updateUIAfterRESTRequestsCompleted(SIGN_IN_TASK)
                 mainActivity?.showSnackBar(getString(R.string.connection_succeed))
             } else { // ERRORS
                 if (response == null) {

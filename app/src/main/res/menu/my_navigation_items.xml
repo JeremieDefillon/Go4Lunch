@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/map_button"
+        android:title="@string/map"
+        android:icon="@drawable/map" />
+    <item android:id="@+id/restaurants_button"
+        android:title="@string/restaurants"
+        android:icon="@drawable/list" />
+    <item android:id="@+id/workmates_button"
+        android:title="@string/workmates"
+        android:icon="@drawable/people" />
+</menu>

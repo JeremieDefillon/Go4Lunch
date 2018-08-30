@@ -176,26 +176,24 @@
 
         </RelativeLayout>
 
-        <android.support.v7.widget.RecyclerView
+        <!-- RecyclerView -->
+        <include
             android:id="@+id/workmates_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </android.support.v7.widget.RecyclerView>
+            layout="@layout/recycler_view_fragment" />
 
     </LinearLayout>
 
     <FrameLayout
         android:layout_width="70dip"
         android:layout_height="70dip"
-        android:layout_marginTop="195dip"
-        android:layout_marginStart="300dip"
+        android:layout_marginStart="320dip"
+        android:layout_marginTop="190dip"
         android:background="@drawable/circle_button_background">
 
         <ImageView
             android:id="@+id/select_restaurant"
-            android:layout_width="50dip"
-            android:layout_height="50dip"
+            android:layout_width="40dip"
+            android:layout_height="40dip"
             android:layout_gravity="center"
             android:background="@drawable/check"/>
     </FrameLayout>

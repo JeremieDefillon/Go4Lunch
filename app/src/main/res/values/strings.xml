@@ -11,6 +11,10 @@
 
     <string name="img_desc">photo</string>
 
+
+    <string name="no_username_found">No Username Found</string>
+    <string name="no_email_found">No Email Found</string>
+
     <string name="empty">Empty</string>
     <string name="noRestaurantFound">Any restaurant found around</string>
     <string name="inLoading">Loading …</string>
@@ -49,5 +53,13 @@
     <string name="call">CALL</string>
     <string name="like">LIKE</string>
     <string name="website">WEBSITE</string>
+
+    <!-- APP DICTIONNARY -->
+    <string name="go_eat">will eat at</string>
+    <string name="doesnt_chosen">hasn\'t chosen where to eat</string>
+    <string name="is_joining">is joining !</string>
+    <string name="none_joining">There is none workmates coming yet !</string>
+    <string name="none_restaurant">There is none restaurant found !</string>
+    <string name="none_workmate">There is none workmates registered yet !</string>
 
 </resources>
