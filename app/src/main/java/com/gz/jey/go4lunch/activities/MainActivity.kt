@@ -1,5 +1,7 @@
 package com.gz.jey.go4lunch.activities
 
+import android.app.SearchManager
+import android.content.Context
 import android.os.Bundle
 import android.support.annotation.Nullable
 import android.support.design.widget.BottomNavigationView
@@ -12,10 +14,13 @@ import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.SearchView
 import android.support.v7.widget.Toolbar
 import android.text.TextUtils
 import android.util.Log
+import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.ImageView
@@ -61,6 +66,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val SIGN_IN_TASK = 98
 
     // FOR DESIGN
+    var toolMenu : Menu? = null
     var coordinatorLayout: CoordinatorLayout? = null
     var drawerLayout: DrawerLayout? = null
     var toolbar: Toolbar? = null
@@ -80,6 +86,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     var mDefaultLocation: LatLng? = null
     var mLastKnownLocation: LatLng? = null
     var restaurantID: String? = null
+
+    var searchMenu = false
 
 
     override fun onCreate(savedInstanceState: Bundle?){
@@ -125,6 +133,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun configureToolBar() {
         this.toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
+    }
+
+    /**
+     * @param menu Menu
+     * @return true
+     */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        toolMenu = menu
+
+        // Inflate the menu and add it to the Toolbar
+        menuInflater.inflate(R.menu.menu_activity_main, toolMenu)
+
+        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        (toolMenu!!.findItem(R.id.search).actionView as SearchView).apply {
+            setSearchableInfo(searchManager.getSearchableInfo(componentName))
+        }
+
+        return true
     }
 
 
