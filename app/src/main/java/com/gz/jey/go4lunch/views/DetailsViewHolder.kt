@@ -5,9 +5,8 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import com.google.android.gms.maps.model.LatLng
+import com.bumptech.glide.Glide
 import com.gz.jey.go4lunch.R
-import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.models.Contact
 import java.lang.ref.WeakReference
 
@@ -41,7 +40,7 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
         this.action!!.text = context.getString(R.string.is_joining).toString()
 
         val imgLink = contact.urlPicture
-        GlideApp.with(context)
+        Glide.with(context)
                 .load(imgLink)
                 .into(photo!!)
 

@@ -3,7 +3,7 @@
     android:id="@+id/menu">
 
         <item
-            android:id="@+id/article_search_btn"
+            android:id="@+id/search_on"
             android:icon="@drawable/search"
             app:showAsAction="ifRoom"
             android:title="@string/search">

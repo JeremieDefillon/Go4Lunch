@@ -1,26 +1,22 @@
 package com.gz.jey.go4lunch.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import com.bumptech.glide.Glide
-import com.google.android.gms.maps.model.LatLng
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.models.Contact
-import com.gz.jey.go4lunch.models.Place
-import com.gz.jey.go4lunch.utils.ApiStreams
 import com.gz.jey.go4lunch.utils.ItemClickSupport
 import com.gz.jey.go4lunch.views.WorkmatesAdapter
 import io.reactivex.disposables.Disposable
-import io.reactivex.observers.DisposableObserver
 import java.util.*
 
 class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
@@ -63,8 +59,6 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
         contacts = ArrayList()
         // Create newsAdapter passing in the sample user data
         workmatesAdapter = WorkmatesAdapter(
-                getString(R.string.google_api_key),
-                mainActivity!!,
                 contacts!!,
                 Glide.with(this),
                 this)
@@ -86,21 +80,29 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
     private fun setOnClickRecyclerView() {
         ItemClickSupport.addTo(recyclerView!!, R.layout.workmates_item)
                 .setOnItemClickListener { _, position, _ ->
-                    val rid = mainActivity!!.contacts[position].whereEat
-                    mainActivity!!.restaurantID = rid
-                    mainActivity!!.setDetailsRestaurant()
+                    val rid = mainActivity!!.contacts[position].whereEatID
+                    val nam = mainActivity!!.contacts[position].whereEatName
+                    if(!rid.isEmpty()){
+                        mainActivity!!.restaurantID = rid
+                        mainActivity!!.restaurantName = nam
+                        mainActivity!!.setDetailsRestaurant()
+                    }else{
+                        val cont = mainActivity!!.contacts[position].username
+                        val unch = getString(R.string.doesnt_chosen)
+                        mainActivity!!.popupmsg("$cont $unch")
+                    }
                 }
     }
 
     fun initList() {
-        UpdateUI(mainActivity!!.contacts)
+        updateUI(mainActivity!!.contacts)
     }
 
     /**
-     * @param place Place
+     * @param cntc ArrayList<Contact>
      * called while request get back models
      */
-    private fun UpdateUI(cntc : ArrayList<Contact>) {
+    fun updateUI(cntc : ArrayList<Contact>) {
         if (contacts != null)
             contacts!!.clear()
         else

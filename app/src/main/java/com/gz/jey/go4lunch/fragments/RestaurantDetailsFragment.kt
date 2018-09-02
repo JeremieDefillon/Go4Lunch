@@ -21,10 +21,8 @@ import com.gz.jey.go4lunch.utils.ApiPhoto
 import com.gz.jey.go4lunch.utils.CalculateRate
 import com.gz.jey.go4lunch.utils.SetImageColor
 import com.gz.jey.go4lunch.views.DetailsAdapter
-import com.gz.jey.go4lunch.views.GlideApp
 import io.reactivex.disposables.Disposable
 import java.util.*
-import kotlin.collections.ArrayList
 
 class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
@@ -129,7 +127,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     private fun setDetails(){
 
         val imgLink = ApiPhoto.getPhotoURL(500, restaurant!!.photos[0].photoReference, getString(R.string.google_maps_key))
-        GlideApp.with(this)
+        Glide.with(this)
                 .load(imgLink)
                 .into(restaurantImage!!)
 
@@ -172,9 +170,9 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         websiteTxt!!.text = getString(R.string.website)
         websiteImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.world, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
 
-        if(mainActivity!!.user!!.whereEat == mainActivity!!.restaurantID){
+        if(mainActivity!!.user!!.whereEatID == mainActivity!!.restaurantID){
             selectRestaurant!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.check_circle, ContextCompat.getColor(mainActivity!!, R.color.colorAccent)))
-            mainActivity!!.user!!.whereEat = mainActivity!!.restaurantID!!
+            mainActivity!!.user!!.whereEatID = mainActivity!!.restaurantID!!
             selectRestaurant!!.setOnClickListener {
                 removeRestaurant()
             }
@@ -190,8 +188,9 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
     private fun goToRestaurant(){
         selectRestaurant!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.check_circle, ContextCompat.getColor(mainActivity!!, R.color.colorAccent)))
-        mainActivity!!.user!!.whereEat = mainActivity!!.restaurantID!!
-        UserHelper.updateWhereEat(mainActivity!!.user!!.uid, mainActivity!!.user!!.whereEat)
+        mainActivity!!.user!!.whereEatID = mainActivity!!.restaurantID!!
+        mainActivity!!.user!!.whereEatName = mainActivity!!.restaurantName!!
+        UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
         selectRestaurant!!.setOnClickListener {
             removeRestaurant()
         }
@@ -199,7 +198,11 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
     private fun removeRestaurant(){
         selectRestaurant!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.check, ContextCompat.getColor(mainActivity!!, R.color.colorGrey)))
-        UserHelper.updateWhereEat(mainActivity!!.user!!.uid, "")
+        mainActivity!!.restaurantID = ""
+        mainActivity!!.restaurantName = ""
+        mainActivity!!.user!!.whereEatID = mainActivity!!.restaurantID!!
+        mainActivity!!.user!!.whereEatName = mainActivity!!.restaurantName!!
+        UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
         selectRestaurant!!.setOnClickListener {
             goToRestaurant()
         }

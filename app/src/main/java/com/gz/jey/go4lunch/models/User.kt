@@ -1,13 +1,15 @@
 package com.gz.jey.go4lunch.models
 
-import kotlin.collections.ArrayList
+import java.util.*
 
-class User(uid: String, username: String, mail: String, urlPicture: String, whereEat : String, restLiked : ArrayList<String>) {
+
+class User(uid: String, username: String, mail: String, urlPicture: String, whereEatID : String, whereEatName : String, restLiked : ArrayList<String>) {
 
     var uid: String = uid
     var mail: String = mail
     var username: String = username
     var urlPicture: String = urlPicture
-    var whereEat: String = whereEat
+    var whereEatID: String = whereEatID
+    var whereEatName: String = whereEatName
     var restLiked : ArrayList<String> = restLiked
 }

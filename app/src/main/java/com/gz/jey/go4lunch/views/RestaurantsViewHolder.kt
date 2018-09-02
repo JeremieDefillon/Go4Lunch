@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.SphericalUtil
 import com.gz.jey.go4lunch.R
@@ -69,7 +70,8 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
         setTime(context, this.openTime!!.text as String)
         val dist = SphericalUtil.computeDistanceBetween(startLatLng, LatLng(res.geometry.location.lat, res.geometry.location.lng))
         this.distance!!.text = getDistance(dist)
-        this.workmatesAmount!!.text = "(0)"
+        val amount = res.workmates.size
+        this.workmatesAmount!!.text = "($amount)"
         this.workmatesIcon!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.perm_identity, Color.BLACK))
         when(CalculateRate.getRateOn3(res.rating)){
             1 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
@@ -90,7 +92,7 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
         }
 
         val imgLink = ApiPhoto.getPhotoURL(100, res.photos[0].photoReference, key)
-        GlideApp.with(context)
+        Glide.with(context)
                 .load(imgLink)
                 .into(restaurantImg!!)
 

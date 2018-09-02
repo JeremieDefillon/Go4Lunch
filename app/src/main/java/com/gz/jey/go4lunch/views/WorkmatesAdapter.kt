@@ -5,11 +5,8 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.bumptech.glide.RequestManager
-import com.google.android.gms.maps.model.LatLng
 import com.gz.jey.go4lunch.R
-import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.models.Contact
-import com.gz.jey.go4lunch.models.User
 
 class WorkmatesAdapter
 /**
@@ -18,8 +15,6 @@ class WorkmatesAdapter
  * @param callback Listener */
 (
         // FOR DATA
-        private val key: String,
-        private val mainAct: MainActivity,
         private val contacts: List<Contact>,
         private val glide: RequestManager,
         // FOR COMMUNICATION
@@ -49,8 +44,6 @@ class WorkmatesAdapter
      */
     override fun onBindViewHolder(viewHolder: WorkmatesViewHolder, position: Int) {
         viewHolder.updateWorkmates(
-                this.key,
-                mainAct!! ,
                 context!!,
                 this.contacts[position],
                 this.callback)

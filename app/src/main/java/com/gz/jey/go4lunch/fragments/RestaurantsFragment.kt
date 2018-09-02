@@ -88,6 +88,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         ItemClickSupport.addTo(recyclerView!!, R.layout.restaurant_item)
                 .setOnItemClickListener { _, position, _ ->
                     mainActivity!!.restaurantID = mainActivity!!.place!!.results[position].id
+                    mainActivity!!.restaurantName = mainActivity!!.place!!.results[position].name
                     mainActivity!!.setDetailsRestaurant()
                 }
     }
@@ -131,9 +132,9 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         results!!.addAll(place.results)
 
         for(c in mainActivity!!.contacts){
-            if(!c.whereEat.isEmpty()){
+            if(!c.whereEatID.isEmpty()){
                 for(r in place!!.results){
-                    if(r.id==c.whereEat)
+                    if(r.id==c.whereEatID)
                         if(!r.workmates.contains(c)) {
                             r.workmates.add(c)
                             break

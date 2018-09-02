@@ -86,14 +86,14 @@ class SignInFragment : Fragment() {
             if (resultCode == Activity.RESULT_OK) {
                 // SUCCESS
                 mainActivity?.updateUIAfterRESTRequestsCompleted(SIGN_IN_TASK)
-                mainActivity?.showSnackBar(getString(R.string.connection_succeed))
+                mainActivity?.popupmsg(getString(R.string.connection_succeed))
             } else { // ERRORS
                 if (response == null) {
-                    mainActivity?.showSnackBar(getString(R.string.error_authentication_canceled))
+                    mainActivity?.popupmsg(getString(R.string.error_authentication_canceled))
                 } else if (response.error?.equals(ErrorCodes.NO_NETWORK) ?: (false)) {
-                    mainActivity?.showSnackBar(getString(R.string.error_no_internet))
+                    mainActivity?.popupmsg(getString(R.string.error_no_internet))
                 } else if (response.error?.equals(ErrorCodes.UNKNOWN_ERROR) ?: (false)) {
-                    mainActivity?.showSnackBar(getString(R.string.error_unknown_error))
+                    mainActivity?.popupmsg(getString(R.string.error_unknown_error))
                 }
             }
         }

@@ -26,6 +26,8 @@
 
     <!-- TOOLBAR TITLES -->
     <string name="toolbar_title_login_activity">My Profile</string>
+    <string name="search_restaurants">Recherche Restaurants</string>
+    <string name="search_workmates">Recherche Collègues</string>
 
     <!-- NAVIGATION DRAWER -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -57,5 +59,9 @@
     <string name="go_eat">va manger à</string>
     <string name="doesnt_chosen">n\'a pas choisi où manger</string>
     <string name="is_joining">rejoint !</string>
+    <string name="none_joining">Aucun collègue vient ici !</string>
+    <string name="none_restaurant">Aucun restaurant trouvé !</string>
+    <string name="none_workmate">Aucun collègue enregistré !</string>
+
 
 </resources>

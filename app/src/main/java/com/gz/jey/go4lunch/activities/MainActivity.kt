@@ -1,31 +1,26 @@
 package com.gz.jey.go4lunch.activities
 
-import android.app.SearchManager
-import android.content.Context
 import android.os.Bundle
-import android.support.annotation.Nullable
-import android.support.design.widget.BottomNavigationView
-import android.support.design.widget.CoordinatorLayout
-import android.support.design.widget.NavigationView
-import android.support.design.widget.Snackbar
+import android.support.design.widget.*
 import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.SearchView
 import android.support.v7.widget.Toolbar
+import android.text.Editable
 import android.text.TextUtils
+import android.text.TextWatcher
 import android.util.Log
+import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
+
+import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.maps.model.LatLng
@@ -41,18 +36,12 @@ import com.gz.jey.go4lunch.api.UserHelper
 import com.gz.jey.go4lunch.fragments.*
 import com.gz.jey.go4lunch.models.Contact
 import com.gz.jey.go4lunch.models.Place
-import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.models.User
 import com.gz.jey.go4lunch.utils.CheckIfTest
-import com.gz.jey.go4lunch.views.GlideApp
+import com.mancj.materialsearchbar.MaterialSearchBar
 import java.util.*
-import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
-
-    companion object {
-        val PERMISSIONS_REQUEST_READ_CONTACTS = 100
-    }
 
     private val TAG = "MainActivity"
             val ESC = "¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤"
@@ -67,9 +56,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     // FOR DESIGN
     var toolMenu : Menu? = null
-    var coordinatorLayout: CoordinatorLayout? = null
+    var fragmentContainer : FrameLayout? = null
     var drawerLayout: DrawerLayout? = null
     var toolbar: Toolbar? = null
+    var searchBar: LinearLayout? = null
     var bottom: BottomNavigationView? = null
     var navigationView: NavigationView? = null
     var accountPicture : ImageView? = null
@@ -86,6 +76,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     var mDefaultLocation: LatLng? = null
     var mLastKnownLocation: LatLng? = null
     var restaurantID: String? = null
+    var restaurantName: String? = null
 
     var searchMenu = false
 
@@ -93,7 +84,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_main)
-
+        fragmentContainer = findViewById(R.id.fragmentContainer)
         val firestore : FirebaseFirestore = FirebaseFirestore.getInstance()
         val settings : FirebaseFirestoreSettings = FirebaseFirestoreSettings.Builder()
         .setTimestampsInSnapshotsEnabled(true)
@@ -133,26 +124,84 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun configureToolBar() {
         this.toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
+        searchBar = findViewById(R.id.searchBar)
+        val rlp= searchBar!!.layoutParams as (LinearLayout.LayoutParams)
+        // position center with margin
+        //rlp.addRule(LinearLayout.ALIGN_PARENT_TOP,0)
+        //rlp.addRule(LinearLayout.ALIGN_PARENT_BOTTOM,LinearLayout.TRUE)
+        rlp.height = (calculateActionBar()*0.7f).toInt()
+        rlp.setMargins(20,20,20,20)
     }
 
+   // Configure SearchBar
+    private fun configureSearchBar(tab : Int) {
+        val searchText = searchBar!!.findViewById<EditText>(R.id.search_txt)
+        val backSearch = searchBar!!.findViewById<ImageButton>(R.id.back_search)
+        val speechSearch = searchBar!!.findViewById<ImageButton>(R.id.speech_search)
+
+        if(tab == 2) searchText.hint = getString(R.string.search_workmates)
+        else searchText.hint = getString(R.string.search_restaurants)
+
+        searchText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) {
+
+            }
+
+            override fun onTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) {
+
+            }
+
+            override fun afterTextChanged(editable : Editable) {
+                if(tab==2){
+                    val contactsFetched : ArrayList<Contact> = ArrayList()
+                    for(c in contacts){
+                        if(c.username.contains(editable)){
+                            contactsFetched.add(c)
+                        }
+                    }
+                    workmatesFragment!!.updateUI(contactsFetched)
+                }else{
+
+                }
+            }
+        })
+
+       backSearch.setOnClickListener {
+           toolbar!!.visibility = VISIBLE
+           searchBar!!.visibility = GONE}
+   }
+
     /**
-     * @param menu Menu
      * @return true
      */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         toolMenu = menu
-
         // Inflate the menu and add it to the Toolbar
-        menuInflater.inflate(R.menu.menu_activity_main, toolMenu)
-
-        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        (toolMenu!!.findItem(R.id.search).actionView as SearchView).apply {
-            setSearchableInfo(searchManager.getSearchableInfo(componentName))
-        }
-
+        menuInflater.inflate(R.menu.menu_toolbar, toolMenu)
         return true
     }
 
+    /**
+     * @param item MenuItem
+     * @return boolean
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        // Handle item selection
+        when (id) {
+            R.id.search_on -> {
+                toolbar!!.visibility = GONE
+                searchBar!!.visibility = VISIBLE
+                return true
+            }
+            /*R.id.search_off -> {
+                toolbar!!.visibility = VISIBLE
+                searchBar!!.visibility = GONE
+                return true
+            }*/
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
 
     // Configure BottomBar
     private fun configureBottomBar() {
@@ -192,7 +241,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         //Get picture URL from Firebase
         if (this.getCurrentUser()!!.photoUrl != null) {
-            GlideApp.with(this)
+            Glide.with(this)
                     .load(this.getCurrentUser()!!.photoUrl)
                     .apply(RequestOptions.circleCropTransform())
                     .into(accountPicture!!)
@@ -218,7 +267,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle Navigation Item Click
         item.isChecked = true
         when (item.itemId) {
-            R.id.restaurant_menu -> setDetailsRestaurant()
+            R.id.restaurant_menu -> {
+                if(user!!.whereEatID!=null && !user!!.whereEatID.isEmpty()){
+                    restaurantID = user!!.whereEatID
+                    restaurantName = user!!.whereEatName
+                    setDetailsRestaurant()
+                }else{
+                    popupmsg(getString(R.string.none_restaurant))
+                }
+            }
             R.id.settings -> setSettings()
             R.id.power_settings -> disconnect()
         }
@@ -239,12 +296,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     private fun setMapViewFragment(){
         tab=0
+        this.configureSearchBar(tab)
         invalidateOptionsMenu()
         Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
         setDrawerLayout()
         Log.d(TAG,"SET MAP VIEW FRAGMENT")
         this.mapViewFragment = MapViewFragment.newInstance(this)
         bottom!!.visibility = VISIBLE
+        setFrameLayoutMargin(true)
         this.moveFragment(this.mapViewFragment!!)
     }
 
@@ -253,11 +312,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     private fun setRestaurantsFragment(){
         tab = 1
+        this.configureSearchBar(tab)
         invalidateOptionsMenu()
         Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
         setDrawerLayout()
         this.restaurantsFragment = RestaurantsFragment.newInstance(this)
         bottom!!.visibility = VISIBLE
+        setFrameLayoutMargin(true)
         this.moveFragment(this.restaurantsFragment!!)
     }
 
@@ -266,11 +327,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     private fun setWorkmatesFragment(){
         tab=2
+        this.configureSearchBar(tab)
         invalidateOptionsMenu()
         Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
         setDrawerLayout()
         this.workmatesFragment = WorkmatesFragment.newInstance(this)
         bottom!!.visibility = VISIBLE
+        setFrameLayoutMargin(true)
         this.moveFragment(this.workmatesFragment!!)
     }
 
@@ -290,6 +353,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
         bottom!!.visibility = GONE
+        setFrameLayoutMargin(false)
         this.moveFragment(this.detailsFragment!!)
     }
 
@@ -313,14 +377,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             .commit()
     }
 
-    /**
-     * @param coordinatorLayout CoordinatorLayout
-     * @param message String
-     */
-    internal fun showSnackBar(message: String) {
-        coordinatorLayout = this.findViewById(R.id.main_activity_coordinator_layout)
-        Snackbar.make(coordinatorLayout!!, message, Snackbar.LENGTH_SHORT).show()
+    fun popupmsg(msg : String){
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
+
 
     /**
      * Set Settings
@@ -351,13 +411,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun loadData(data : DocumentSnapshot){
         user=User(
                 data["uid"] as String,
                 data["username"] as String,
                 data["mail"] as String,
                 data["urlPicture"] as String,
-                data["whereEat"] as String,
+                data["whereEatID"] as String,
+                data["whereEatName"] as String,
                 data["restLiked"] as ArrayList<String> )
 
         contacts = ArrayList()
@@ -366,10 +428,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if(contact.get("uid").toString() != getCurrentUser()!!.uid) {
                     val uid = contact.get("uid").toString()
                     val username = contact.get("username").toString()
-                    val mail = contact.get("mail").toString()
                     val urlPicture = contact.get("urlPicture").toString()
-                    val whereEat = contact.get("whereEat").toString()
-                    val cntc = Contact(uid, username, mail, urlPicture, whereEat)
+                    val whereEatID= contact.get("whereEatID").toString()
+                    val whereEatName= contact.get("whereEatName").toString()
+                    val restLiked= arrayListOf(contact.get("restLiked").toString())
+                    val cntc = Contact(uid, username, urlPicture, whereEatID, whereEatName, restLiked)
                     contacts.add(cntc)
                 }
             }
@@ -388,7 +451,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val uid = getCurrentUser()!!.uid
             val whereEat = ""
             val restLiked : ArrayList<String> = ArrayList()
-            UserHelper.createUser(uid, username!!, mail!!, urlPicture, whereEat, restLiked).addOnFailureListener(this.onFailureListener())
+            UserHelper.createUser(uid, username!!, mail!!, urlPicture, whereEat, whereEat, restLiked).addOnFailureListener(this.onFailureListener())
             checkUserInFirestore()
         }
     }
@@ -424,4 +487,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private fun setFrameLayoutMargin(marged : Boolean){
+        val marge = calculateActionBar()
+        Log.d("MARGIN ACTION BAR", marge.toString())
+        val bottom = if(marged) marge else 0
+        val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+        layoutParams.setMargins(0, marge, 0, bottom)
+        fragmentContainer!!.layoutParams = layoutParams
+    }
+
+    private fun calculateActionBar() : Int {
+        // Calculate ActionBar height
+        val tv = TypedValue()
+        return if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+        }else
+            0
+    }
+
 }
+
