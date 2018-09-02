@@ -23,6 +23,8 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.activities.MainActivity
+import com.gz.jey.go4lunch.api.UserHelper
+import com.gz.jey.go4lunch.models.Contact
 import com.gz.jey.go4lunch.models.Place
 import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.ApiStreams
@@ -242,10 +244,12 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
         restaurants.clear()
         restaurants.addAll(place.results)
 
+
         for(c in mainActivity!!.contacts){
             if(!c.whereEatID.isEmpty()){
                 for(r in place!!.results){
-                    if(r.id==c.whereEatID)
+                    if(r.placeId==c.whereEatID)
+
                         if(!r.workmates.contains(c)) {
                             r.workmates.add(c)
                             break
@@ -271,7 +275,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
     override fun onMarkerClick(p0: Marker?) : Boolean {
         for((index,value) in mainActivity!!.place!!.results.withIndex()){
             if(mainActivity!!.place!!.results[index].name == p0!!.title){
-                mainActivity!!.restaurantID = mainActivity!!.place!!.results[index].id
+                mainActivity!!.restaurantID = mainActivity!!.place!!.results[index].placeId
                 mainActivity!!.restaurantName = mainActivity!!.place!!.results[index].name
                break
             }

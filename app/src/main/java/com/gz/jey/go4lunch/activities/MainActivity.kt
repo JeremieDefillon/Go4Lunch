@@ -1,8 +1,14 @@
 package com.gz.jey.go4lunch.activities
 
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.*
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
@@ -42,6 +48,13 @@ import com.mancj.materialsearchbar.MaterialSearchBar
 import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
+
+    // FOR PERMISSIONS
+
+    private val PERMISSIONS_REQUEST_PHONE_CALL = 69
+    var mPhoneCallPermissionGranted = false
+    private var number : String? = null
+
 
     private val TAG = "MainActivity"
             val ESC = "¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤"
@@ -425,6 +438,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         contacts = ArrayList()
         UserHelper.getUsersCollection().get().addOnSuccessListener {
             for(contact in it.documents){
+
                 if(contact.get("uid").toString() != getCurrentUser()!!.uid) {
                     val uid = contact.get("uid").toString()
                     val username = contact.get("username").toString()
@@ -432,6 +446,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val whereEatID= contact.get("whereEatID").toString()
                     val whereEatName= contact.get("whereEatName").toString()
                     val restLiked= arrayListOf(contact.get("restLiked").toString())
+
                     val cntc = Contact(uid, username, urlPicture, whereEatID, whereEatName, restLiked)
                     contacts.add(cntc)
                 }
@@ -476,6 +491,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    @SuppressLint("MissingPermission")
+    fun callTo(number: String){
+        if (mPhoneCallPermissionGranted) {
+            //mainActivity!!.callTo(details.result.internationalPhoneNumber)
+            val callIntent = Intent(Intent.ACTION_CALL)
+            callIntent.data = Uri.parse("tel: $number")
+            this.startActivity(callIntent)
+        } else {
+            this.number = number
+            getPhoneCallPermission()
+        }
+    }
+
+    fun openWebsite(url:String){
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startActivity(intent)
+    }
+
     // --------------------
     // ERROR HANDLER
     // --------------------
@@ -503,6 +536,40 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
         }else
             0
+    }
+
+    // HANDLE PERMISSIONS
+
+    private fun getPhoneCallPermission() {
+        /*
+     * Request phone call permission.
+     * The result of the permission request is handled by a callback,
+     * onRequestPermissionsResult.
+     */
+        if (ContextCompat.checkSelfPermission(applicationContext,
+                        android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+            mPhoneCallPermissionGranted = true
+            callTo(number!!)
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(android.Manifest.permission.CALL_PHONE),
+                    PERMISSIONS_REQUEST_PHONE_CALL)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>,
+                                            grantResults: IntArray) {
+        mPhoneCallPermissionGranted = false
+        when (requestCode) {
+            PERMISSIONS_REQUEST_PHONE_CALL -> {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mPhoneCallPermissionGranted = true
+                    callTo(number!!)
+                }
+            }
+        }
     }
 
 }

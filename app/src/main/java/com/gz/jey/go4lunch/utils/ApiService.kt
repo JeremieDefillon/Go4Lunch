@@ -1,5 +1,6 @@
 package com.gz.jey.go4lunch.utils
 
+import com.gz.jey.go4lunch.models.Details
 import com.gz.jey.go4lunch.models.Place
 import io.reactivex.Observable
 import retrofit2.http.GET
@@ -9,7 +10,7 @@ interface ApiService {
 
 
     // the request for the google places search api
-    //https://maps.googleapis.com/maps/api/place/textsearch/json?type=restaurant&radius=50000&location=46.0056,4.7199&language=fr&key=AIzaSyB2l1D02XIzEFmEecNFAwhe404tHaRS1Sw
+    //https://maps.googleapis.com/maps/api/place/textsearch/json?type=restaurant&radius=50000&location=46.0056,4.7199&language=fr&key=KEY
     //private val villars: LatLng = LatLng(45.9953225, 5.029484499999967)
     //private val privas: LatLng = LatLng(44.735269, 4.599038999999948)
     @GET("maps/api/place/textsearch/json?")
@@ -21,4 +22,12 @@ interface ApiService {
         @Query("language") language: String,
         @Query("key") key: String
     ) : Observable<Place>
+
+    @GET("maps/api/place/details/json?")
+    fun getDetails(
+            @Query("placeid") placeid: String,
+            @Query("fields") fields: String,
+            @Query("language") language: String,
+            @Query("key") key: String
+    ) : Observable<Details>
 }

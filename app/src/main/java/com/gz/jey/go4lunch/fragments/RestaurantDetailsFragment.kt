@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,13 +17,17 @@ import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.api.UserHelper
 import com.gz.jey.go4lunch.models.Contact
+import com.gz.jey.go4lunch.models.Details
 import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.ApiPhoto
+import com.gz.jey.go4lunch.utils.ApiStreams
 import com.gz.jey.go4lunch.utils.CalculateRate
 import com.gz.jey.go4lunch.utils.SetImageColor
 import com.gz.jey.go4lunch.views.DetailsAdapter
 import io.reactivex.disposables.Disposable
+import io.reactivex.observers.DisposableObserver
 import java.util.*
+
 
 class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
@@ -33,6 +38,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     private var disposable: Disposable? = null
 
     private var results: ArrayList<Contact>? = null
+    private var resultDetails: Details? = null
     private var detailsAdapter: DetailsAdapter? = null
     private var restaurant : Result? = null
 
@@ -124,7 +130,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     /**
      * to set the details
      */
-    private fun setDetails(){
+    private fun setDetails(details: Details){
 
         val imgLink = ApiPhoto.getPhotoURL(500, restaurant!!.photos[0].photoReference, getString(R.string.google_maps_key))
         Glide.with(this)
@@ -152,11 +158,20 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             }
         }
 
-        call!!.setOnClickListener {
-            // DO CALL
-        }
         callTxt!!.text = getString(R.string.call)
-        callImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.call, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
+        var number = details.result.formattedPhoneNumber
+        if(number!=null && !number.isEmpty() && restaurant!!.openingHours.openNow){
+            number = number.replace(" ","")
+            call!!.setOnClickListener {
+                mainActivity!!.callTo(number)
+            }
+            callTxt!!.setTextColor(resources.getColor(R.color.colorPrimaryDark))
+            callImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.call, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
+        }else{
+            callTxt!!.setTextColor(resources.getColor(R.color.colorGrey))
+            callImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.call, ContextCompat.getColor(mainActivity!!, R.color.colorGrey)))
+        }
+
 
         like!!.setOnClickListener {
             // DO LIKE
@@ -164,11 +179,17 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         likeTxt!!.text = getString(R.string.like)
         likeImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
 
-        website!!.setOnClickListener {
-            // GO WEBSITE
-        }
         websiteTxt!!.text = getString(R.string.website)
-        websiteImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.world, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
+        if(details.result.website!=null && !details.result.website.isEmpty()){
+            website!!.setOnClickListener {
+                mainActivity!!.openWebsite(details.result.website)
+            }
+            websiteTxt!!.setTextColor(resources.getColor(R.color.colorPrimaryDark))
+            websiteImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.world, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
+        }else{
+            websiteTxt!!.setTextColor(resources.getColor(R.color.colorGrey))
+            websiteImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.world, ContextCompat.getColor(mainActivity!!, R.color.colorGrey)))
+        }
 
         if(mainActivity!!.user!!.whereEatID == mainActivity!!.restaurantID){
             selectRestaurant!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.check_circle, ContextCompat.getColor(mainActivity!!, R.color.colorAccent)))
@@ -214,31 +235,28 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         when (req) {
             "place" -> {
                 for (r in mainActivity!!.place!!.results){
-                    if (r.id== mainActivity!!.restaurantID){
+                    if (r.placeId== mainActivity!!.restaurantID){
                         restaurant=r
-                        setDetails()
                         break
                     }
                 }
 
-                /*val location : LatLng =
-                        if(mainActivity!!.mLastKnownLocation == null) mainActivity!!.mDefaultLocation!!
-                        else mainActivity!!.mLastKnownLocation!!
-                disposable = ApiStreams.streamFetchWorkmates(getString(R.string.google_maps_key), location, mainActivity!!.lang)
-                        .subscribeWith(object : DisposableObserver<Place>(){
-                            override fun onNext(place: Place) {
-                                UpdateUI(place)
+                disposable = ApiStreams.streamFetchDetails(getString(R.string.google_maps_key), restaurant!!.placeId, mainActivity!!.lang)
+                        .subscribeWith(object : DisposableObserver<Details>(){
+                            override fun onNext(details: Details) {
+                                setDetails(details)
                             }
 
                             override fun onError(e: Throwable) {
-                                Log.e("MAP RX", e.toString())
+                                Log.e("DETAILS RX", e.toString())
                             }
 
                             override fun onComplete() {}
-                        })*/
+                        })
             }
         }
     }
+
 
     /**
      * @param place Place
@@ -260,6 +278,8 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             view!!.findViewById<TextView>(R.id.no_result_text).text = getString(R.string.none_joining)
         }
     }
+
+
 
     /**
      * to Destroy fragment

@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.bumptech.glide.RequestManager
 import com.gz.jey.go4lunch.R
+import com.gz.jey.go4lunch.api.UserHelper
 import com.gz.jey.go4lunch.models.Contact
 
 class WorkmatesAdapter
@@ -43,6 +44,7 @@ class WorkmatesAdapter
      * UPDATE VIEW HOLDER WITH NEWS
      */
     override fun onBindViewHolder(viewHolder: WorkmatesViewHolder, position: Int) {
+
         viewHolder.updateWorkmates(
                 context!!,
                 this.contacts[position],

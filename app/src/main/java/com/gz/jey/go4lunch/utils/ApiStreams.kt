@@ -1,6 +1,7 @@
 package com.gz.jey.go4lunch.utils
 
 import com.google.android.gms.maps.model.LatLng
+import com.gz.jey.go4lunch.models.Details
 import com.gz.jey.go4lunch.models.Place
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -37,6 +38,18 @@ object ApiStreams {
         val apiService = this.retrofit.create(ApiService::class.java)
 
         return apiService.getRestaurants(type, location, radius, rankby, language, key)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .timeout(20, TimeUnit.SECONDS)
+    }
+
+    fun streamFetchDetails(key: String, id:String, lang: Int): Observable<Details> {
+        val fields = "name,opening_hours,international_phone_number,formatted_phone_number,website"
+        val language = if (lang==1) "fr" else "en"
+
+        val apiService = this.retrofit.create(ApiService::class.java)
+
+        return apiService.getDetails(id , fields, language, key)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(20, TimeUnit.SECONDS)
