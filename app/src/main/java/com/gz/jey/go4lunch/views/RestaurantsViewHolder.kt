@@ -16,7 +16,7 @@ import com.google.maps.android.SphericalUtil
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.ApiPhoto
-import com.gz.jey.go4lunch.utils.CalculateRate
+import com.gz.jey.go4lunch.utils.CalculateRatio
 import com.gz.jey.go4lunch.utils.SetImageColor
 import java.lang.ref.WeakReference
 
@@ -62,32 +62,54 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
      * @param callback NewsAdapter.Listener
      * UPDATE NEWS ITEM LIST
      */
-    fun updateRestaurants(key: String, context : Context, startLatLng: LatLng, res: Result, callback: RestaurantsAdapter.Listener) {
+    fun updateRestaurants(key: String, context : Context, allContact : Int, startLatLng: LatLng, res: Result, callback: RestaurantsAdapter.Listener) {
 
         this.address!!.text = res.formattedAddress
         this.name!!.text = res.name
-        this.openTime!!.text = if(res.openingHours==null || res.openingHours.openNow==null) "" else if(res.openingHours.openNow) "Open" else "Closed"
-        setTime(context, this.openTime!!.text as String)
+        var open = false
+        var oc = ""
+        if(res.openingHours==null || res.openingHours.openNow==null){
+            oc = ""
+        }
+        else if(res.openingHours.openNow) {
+            oc = context.getString(R.string.open)
+            open = true
+        }
+        else {
+            oc = context.getString(R.string.close)
+            open = false
+        }
+
+        this.openTime!!.text = oc
+        setTime(context, open)
         val dist = SphericalUtil.computeDistanceBetween(startLatLng, LatLng(res.geometry.location.lat, res.geometry.location.lng))
         this.distance!!.text = getDistance(dist)
         val amount = res.workmates.size
         this.workmatesAmount!!.text = "($amount)"
         this.workmatesIcon!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.perm_identity, Color.BLACK))
-        when(CalculateRate.getRateOn3(res.rating)){
+        when(CalculateRatio.getRateOn3(res.rating)){
             1 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.firstStar!!.visibility = View.VISIBLE
+                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorTransparent)))
+                this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorTransparent)))
             }
             2 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.firstStar!!.visibility = View.VISIBLE
                 this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.secondStar!!.visibility = View.VISIBLE
+                this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorTransparent)))
             }
-            3 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.firstStar!!.visibility = View.VISIBLE
+               3 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
                 this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.secondStar!!.visibility = View.VISIBLE
                 this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.thirdStar!!.visibility = View.VISIBLE
+            }
+        }
+
+        when(CalculateRatio.getLike(res.liked, allContact)){
+            1 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))}
+            2 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
+                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
+            }
+            3 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
+                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
+                this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
             }
         }
 
@@ -107,18 +129,15 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
             dist.toInt().toString()+" m"
     }
 
-    private fun setTime(context : Context, time : String){
-        when(time){
-            "Open" -> {this.openTime!!.setTextColor(ContextCompat.getColor(context, R.color.colorOpen))
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    this.openTime!!.setTextAppearance(BOLD)
-                }}
-            "Closed" ->{
-                    this.openTime!!.setTextColor(ContextCompat.getColor(context, R.color.colorClosed))
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        this.openTime!!.setTextAppearance(ITALIC)
-                    }
-                }
+    private fun setTime(context : Context, open : Boolean){
+        if(open){
+            this.openTime!!.setTextColor(ContextCompat.getColor(context, R.color.colorOpen))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                this.openTime!!.setTextAppearance(BOLD)
+        }else{
+            this.openTime!!.setTextColor(ContextCompat.getColor(context, R.color.colorClosed))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                this.openTime!!.setTextAppearance(ITALIC)
         }
     }
 

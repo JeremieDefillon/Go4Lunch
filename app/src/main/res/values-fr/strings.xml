@@ -62,6 +62,8 @@
     <string name="none_joining">Aucun collègue vient ici !</string>
     <string name="none_restaurant">Aucun restaurant trouvé !</string>
     <string name="none_workmate">Aucun collègue enregistré !</string>
+    <string name="open">Ouvert</string>
+    <string name="close">Fermé</string>
 
 
 </resources>

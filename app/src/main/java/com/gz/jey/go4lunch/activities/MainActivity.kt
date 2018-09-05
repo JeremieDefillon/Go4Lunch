@@ -1,11 +1,13 @@
 package com.gz.jey.go4lunch.activities
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.support.design.widget.*
+import android.support.design.widget.BottomNavigationView
+import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
@@ -25,10 +27,16 @@ import android.view.MenuItem
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.*
-
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.ErrorCodes
+import com.firebase.ui.auth.IdpResponse
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.places.GeoDataClient
+import com.google.android.gms.location.places.PlaceDetectionClient
+import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
@@ -43,60 +51,75 @@ import com.gz.jey.go4lunch.fragments.*
 import com.gz.jey.go4lunch.models.Contact
 import com.gz.jey.go4lunch.models.Place
 import com.gz.jey.go4lunch.models.User
+import com.gz.jey.go4lunch.utils.ApiStreams
 import com.gz.jey.go4lunch.utils.CheckIfTest
-import com.mancj.materialsearchbar.MaterialSearchBar
+import io.reactivex.disposables.Disposable
+import io.reactivex.observers.DisposableObserver
 import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
 
-    // FOR PERMISSIONS
-
-    private val PERMISSIONS_REQUEST_PHONE_CALL = 69
-    var mPhoneCallPermissionGranted = false
-    private var number : String? = null
-
-
+    // FRAGMENTS
     private val TAG = "MainActivity"
-            val ESC = "¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤"
-    var signInFragment: SignInFragment? = null
+    private var signInFragment: SignInFragment? = null
     private var mapViewFragment: MapViewFragment? = null
     private var restaurantsFragment: RestaurantsFragment? = null
     private var workmatesFragment: WorkmatesFragment? = null
     private var detailsFragment: RestaurantDetailsFragment? = null
 
+    // FOR PERMISSIONS
+    private val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 34
+    var mLocationPermissionGranted: Boolean = false
+    private val PERMISSIONS_REQUEST_PHONE_CALL = 69
+    private var mPhoneCallPermissionGranted = false
+
+    // TASK CODE
     private val SIGN_OUT_TASK = 99
-    private val SIGN_IN_TASK = 98
+    val GPS = 10
+    private val RESTAURANTS = 34
+    val CONTACTS = 37
+    val SEARCH_FOR = 44
+
+    // FOR POSITION
+    var mGeoDataClient : GeoDataClient? = null
+    var mPlaceDetectionClient: PlaceDetectionClient? = null
+    private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
+
+    var mLastKnownLocation: LatLng? = null
 
     // FOR DESIGN
-    var toolMenu : Menu? = null
+    private var toolMenu : Menu? = null
     var fragmentContainer : FrameLayout? = null
-    var drawerLayout: DrawerLayout? = null
+    private var drawerLayout: DrawerLayout? = null
     var toolbar: Toolbar? = null
     var searchBar: LinearLayout? = null
     var bottom: BottomNavigationView? = null
-    var navigationView: NavigationView? = null
-    var accountPicture : ImageView? = null
+    private var navigationView: NavigationView? = null
+    private var accountPicture : ImageView? = null
+    var loading : FrameLayout? = null
 
     // FOR DATA
     var user : User? = null
     var contacts : ArrayList<Contact> = ArrayList()
     var place : Place? = null
-    var tab = 0
-    var username : String?= null
+    private var tab = 0
+    private var username : String?= null
     var email : String?= null
-
+    private var number : String? = null
     var lang = 1
-    var mDefaultLocation: LatLng? = null
-    var mLastKnownLocation: LatLng? = null
+
+    // FOR RESTAURANT SELECTOR
     var restaurantID: String? = null
     var restaurantName: String? = null
 
-    var searchMenu = false
-
+    var disposable : Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_main)
+        loading = findViewById(R.id.loading)
+        setLoading(true, true)
+        //loading!!.visibility = VISIBLE
         fragmentContainer = findViewById(R.id.fragmentContainer)
         val firestore : FirebaseFirestore = FirebaseFirestore.getInstance()
         val settings : FirebaseFirestoreSettings = FirebaseFirestoreSettings.Builder()
@@ -109,28 +132,38 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun initActivity(){
+        Log.d("START INIT", "ACTIVITY")
         if(!CheckIfTest.isRunningTest("NavDrawerTest"))
             when(isCurrentUserLogged()){
                 true -> {
                     checkUserInFirestore()
+                    this.setLocalisationData()
                     this.configureToolBar()
                     this.configureBottomBar()
                     this.setDrawerLayout()
                     this.setNavigationView()
-                        when(intent.extras.getInt("Index")) {
-                            0 -> setMapViewFragment()
-                            1 -> setRestaurantsFragment()
-                            2 -> setWorkmatesFragment()
-                            else -> setMapViewFragment()
-                        }
+                    tab = if(intent.extras.containsKey("Index"))
+                        intent.extras.getInt("Index")
+                    else
+                        1
+                    execRequest(GPS)
                 }
-                false -> {setSignInFragment()}
-                else -> setSignInFragment()
+                false -> {setFragment(0)}
+                else -> setFragment(0)
             }
         else{
             this.setDrawerLayout()
             this.setNavigationView()
         }
+    }
+
+    private fun setLocalisationData(){
+        // Construct a GeoDataClient.
+        mGeoDataClient = Places.getGeoDataClient(applicationContext)
+        // Construct a PlaceDetectionClient.
+        mPlaceDetectionClient = Places.getPlaceDetectionClient(applicationContext)
+        // Construct a FusedLocationProviderClient.
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(applicationContext)
     }
 
     // Configure Toolbar
@@ -152,29 +185,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val backSearch = searchBar!!.findViewById<ImageButton>(R.id.back_search)
         val speechSearch = searchBar!!.findViewById<ImageButton>(R.id.speech_search)
 
-        if(tab == 2) searchText.hint = getString(R.string.search_workmates)
+        if(tab == 3) searchText.hint = getString(R.string.search_workmates)
         else searchText.hint = getString(R.string.search_restaurants)
 
         searchText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) {
-
-            }
-
-            override fun onTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) {
-
-            }
-
+            override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) { }
+            override fun onTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) { }
             override fun afterTextChanged(editable : Editable) {
-                if(tab==2){
+                if(tab==3){
                     val contactsFetched : ArrayList<Contact> = ArrayList()
+                    contactsFetched.clear()
                     for(c in contacts){
-                        if(c.username.contains(editable)){
+                        if(c.username.contains(editable, true)){
                             contactsFetched.add(c)
                         }
                     }
                     workmatesFragment!!.updateUI(contactsFetched)
                 }else{
-
+                    execRequest(SEARCH_FOR)
                 }
             }
         })
@@ -182,6 +210,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
        backSearch.setOnClickListener {
            toolbar!!.visibility = VISIBLE
            searchBar!!.visibility = GONE}
+
+       speechSearch.setOnClickListener{
+
+       }
    }
 
     /**
@@ -201,29 +233,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         // Handle item selection
-        when (id) {
+        return when (id) {
             R.id.search_on -> {
                 toolbar!!.visibility = GONE
                 searchBar!!.visibility = VISIBLE
-                return true
+                true
             }
-            /*R.id.search_off -> {
-                toolbar!!.visibility = VISIBLE
-                searchBar!!.visibility = GONE
-                return true
-            }*/
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
     // Configure BottomBar
     private fun configureBottomBar() {
-        this.bottom = findViewById(R.id.bottom_menu)
+        this.bottom = this.findViewById(R.id.bottom_menu)
         this.bottom!!.setOnNavigationItemSelectedListener { item ->
+            setLoading(false, true)
             when (item.itemId) {
-                R.id.map_button -> setMapViewFragment()
-                R.id.restaurants_button -> setRestaurantsFragment()
-                R.id.workmates_button -> setWorkmatesFragment()
+                R.id.map_button -> {
+                    tab = 1
+                    execRequest(GPS)}
+                R.id.restaurants_button -> {
+                    tab = 2
+                    execRequest(RESTAURANTS)
+                }
+                R.id.workmates_button -> {
+                    tab = 3
+                    execRequest(CONTACTS)
+                }
             }
             true
         }
@@ -281,10 +317,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         item.isChecked = true
         when (item.itemId) {
             R.id.restaurant_menu -> {
-                if(user!!.whereEatID!=null && !user!!.whereEatID.isEmpty()){
+                if(!user!!.whereEatID.isEmpty()){
                     restaurantID = user!!.whereEatID
                     restaurantName = user!!.whereEatName
-                    setDetailsRestaurant()
+                    setFragment(4)
                 }else{
                     popupmsg(getString(R.string.none_restaurant))
                 }
@@ -296,79 +332,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    /**
-     * Set Sign In
-     */
-    private fun setSignInFragment(){
-        this.signInFragment = SignInFragment.newInstance(this)
-        this.moveFragment(this.signInFragment!!)
-    }
-
-    /**
-     * Set MapView
-     */
-    private fun setMapViewFragment(){
-        tab=0
-        this.configureSearchBar(tab)
-        invalidateOptionsMenu()
-        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
-        setDrawerLayout()
-        Log.d(TAG,"SET MAP VIEW FRAGMENT")
-        this.mapViewFragment = MapViewFragment.newInstance(this)
-        bottom!!.visibility = VISIBLE
-        setFrameLayoutMargin(true)
-        this.moveFragment(this.mapViewFragment!!)
-    }
-
-    /**
-     * Set Restaurants
-     */
-    private fun setRestaurantsFragment(){
-        tab = 1
-        this.configureSearchBar(tab)
-        invalidateOptionsMenu()
-        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
-        setDrawerLayout()
-        this.restaurantsFragment = RestaurantsFragment.newInstance(this)
-        bottom!!.visibility = VISIBLE
-        setFrameLayoutMargin(true)
-        this.moveFragment(this.restaurantsFragment!!)
-    }
-
-    /**
-     * Set Workmates
-     */
-    private fun setWorkmatesFragment(){
-        tab=2
-        this.configureSearchBar(tab)
-        invalidateOptionsMenu()
-        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
-        setDrawerLayout()
-        this.workmatesFragment = WorkmatesFragment.newInstance(this)
-        bottom!!.visibility = VISIBLE
-        setFrameLayoutMargin(true)
-        this.moveFragment(this.workmatesFragment!!)
-    }
-
-    /**
-     * Set Restaurants
-     */
-    fun setDetailsRestaurant(){
-        invalidateOptionsMenu()
-        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        toolbar!!.setNavigationOnClickListener {
-            when(tab){
-                0->setMapViewFragment()
-                1->setRestaurantsFragment()
-                2->setWorkmatesFragment()
-            }
-        }
-        this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
-        bottom!!.visibility = GONE
-        setFrameLayoutMargin(false)
-        this.moveFragment(this.detailsFragment!!)
-    }
 
     /**
      * Set Settings
@@ -377,14 +340,54 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         invalidateOptionsMenu()
         Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-
     }
 
     /**
-     * @param fragment Fragment
-     * Add or Change Fragment
+     * @param index Int
+     * Change Fragment
      */
-    private fun moveFragment(fragment: Fragment){
+    fun setFragment(index: Int){
+        var fragment : Fragment? = null
+        invalidateOptionsMenu()
+        when(index){
+            0->{
+                this.signInFragment = SignInFragment.newInstance(this)
+                fragment=this.signInFragment
+            }
+            1->{tab=index
+                this.mapViewFragment = MapViewFragment.newInstance(this)
+                fragment = this.mapViewFragment
+            }
+            2->{tab=index
+                this.restaurantsFragment = RestaurantsFragment.newInstance(this)
+                fragment = this.restaurantsFragment
+            }
+            3->{
+                tab=index
+                this.workmatesFragment = WorkmatesFragment.newInstance(this)
+                fragment = this.workmatesFragment
+            }
+            4->{
+                Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
+                supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+                toolbar!!.setNavigationOnClickListener {
+                    setFragment(tab)
+                }
+                this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
+                bottom!!.visibility = GONE
+                setFrameLayoutMargin(false)
+                fragment = this.detailsFragment
+            }
+        }
+
+        if(index!=0 && index!=4){
+            this.configureSearchBar(tab)
+            Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
+            setDrawerLayout()
+            bottom!!.visibility = VISIBLE
+            setFrameLayoutMargin(true)
+        }
+
         this.supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit()
@@ -410,8 +413,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // REST REQUEST
     // --------------------
 
-    // 1 - Http request that create user in firestore
-    fun checkUserInFirestore(){
+    // request that create user in firestore
+    private fun checkUserInFirestore(){
         if (this.getCurrentUser() != null){
             val uid = getCurrentUser()!!.uid
 
@@ -436,6 +439,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 data["restLiked"] as ArrayList<String> )
 
         contacts = ArrayList()
+        contacts.clear()
         UserHelper.getUsersCollection().get().addOnSuccessListener {
             for(contact in it.documents){
 
@@ -445,15 +449,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val urlPicture = contact.get("urlPicture").toString()
                     val whereEatID= contact.get("whereEatID").toString()
                     val whereEatName= contact.get("whereEatName").toString()
-                    val restLiked= arrayListOf(contact.get("restLiked").toString())
+                    val restLiked= contact.get("restLiked") as ArrayList<String>
 
                     val cntc = Contact(uid, username, urlPicture, whereEatID, whereEatName, restLiked)
                     contacts.add(cntc)
                 }
             }
 
-            if(tab==2)
-                workmatesFragment!!.initList()
+            setAllContacts()
         }
     }
 
@@ -479,16 +482,137 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return this.getCurrentUser() != null
     }
 
+    /**
+     * @param requestCode Int
+     * @param resultCode Int
+     * @param data Intent
+     */
+    fun handleResponseAfterSignIn(requestCode: Int, resultCode: Int, data: Intent) {
+        val response = IdpResponse.fromResultIntent(data)
+        if (requestCode == signInFragment?.rcSignIn ?: Int) {
+            if (resultCode == Activity.RESULT_OK) {
+                // SUCCESS
+                initActivity()
+                popupmsg(getString(R.string.connection_succeed))
+            } else { // ERRORS
+                when {
+                    response == null -> popupmsg(getString(R.string.error_authentication_canceled))
+                    response.error?.equals(ErrorCodes.NO_NETWORK) ?: (false) -> popupmsg(getString(R.string.error_no_internet))
+                    response.error?.equals(ErrorCodes.UNKNOWN_ERROR) ?: (false) -> popupmsg(getString(R.string.error_unknown_error))
+                }
+            }
+        }
+    }
+
     // Create OnCompleteListener called after tasks ended
-    fun updateUIAfterRESTRequestsCompleted(origin: Int): OnSuccessListener<Void> {
+    private fun updateUIAfterRESTRequestsCompleted(origin: Int): OnSuccessListener<Void> {
+        setLoading(true, true)
         return OnSuccessListener {
             when (origin) {
-                SIGN_IN_TASK -> initActivity()
-                SIGN_OUT_TASK -> initActivity()
+                SIGN_OUT_TASK -> {
+                    initActivity()}
                 else -> {
                 }
             }
         }
+    }
+
+    fun execRequest(req : Int) {
+        when (req) {
+            GPS ->{
+                getDeviceLocation()
+            }
+            RESTAURANTS -> {
+                if (mLastKnownLocation != null){
+                    disposable = ApiStreams.streamFetchRestaurants(getString(R.string.google_maps_key), mLastKnownLocation!!, lang)
+                        .subscribeWith(object : DisposableObserver<Place>() {
+                            override fun onNext(place: Place) {
+                                setAllRestaurants(place)
+                            }
+
+                            override fun onError(e: Throwable) {
+                                Log.e("MAP RX", e.toString())
+                            }
+
+                            override fun onComplete() {}
+                        })
+                }else{
+                    execRequest(GPS)
+                }
+            }
+            CONTACTS -> {
+                checkUserInFirestore()
+            }
+            SEARCH_FOR ->{
+                disposable = ApiStreams.streamFetchRestaurants(getString(R.string.google_maps_key), mLastKnownLocation!!, lang)
+                    .subscribeWith(object : DisposableObserver<Place>() {
+                        override fun onNext(place: Place) {
+                            setAllRestaurants(place)
+                        }
+
+                        override fun onError(e: Throwable) {
+                            Log.e("MAP RX", e.toString())
+                        }
+
+                        override fun onComplete() {}
+                    })
+            }
+        }
+    }
+
+    fun setAllRestaurants(place : Place){
+        this.place = place
+        if(contacts.size!=0)
+            setAllContacts()
+        else
+            execRequest(CONTACTS)
+    }
+
+    private fun setAllContacts(){
+        if(place!=null){
+            for(r in place!!.results){
+                if(user!!.restLiked.contains(r.placeId))
+                    r.liked++
+                for(c in contacts){
+                    if(c.restLiked.contains(r.placeId))
+                        r.liked++
+                }
+            }
+
+            for(c in contacts){
+                if(!c.whereEatID.isEmpty()){
+                    for(r in place!!.results){
+                        if(r.placeId==c.whereEatID) {
+                            if (!r.workmates.contains(c)) {
+                                r.workmates.add(c)
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+
+            setFragment(tab)
+        }else{
+            execRequest(RESTAURANTS)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getDeviceLocation() {
+        mFusedLocationProviderClient.lastLocation
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful && task.result != null) {
+                    Log.d(TAG, " TASK DEVICE LOCATION SUCCESS")
+                    mLastKnownLocation = LatLng(task.result.latitude, task.result.longitude)
+                    execRequest(RESTAURANTS)
+                } else {
+                    Log.w("MAP LOCATION", "getLastLocation:exception", task.exception)
+                    Log.e("MAP LOCATION", "Exception: %s", task.exception)
+                    // Prompt the user for permission.
+                    getLocationPermission()
+                }
+            }
     }
 
     @SuppressLint("MissingPermission")
@@ -522,7 +646,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun setFrameLayoutMargin(marged : Boolean){
         val marge = calculateActionBar()
-        Log.d("MARGIN ACTION BAR", marge.toString())
         val bottom = if(marged) marge else 0
         val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         layoutParams.setMargins(0, marge, 0, bottom)
@@ -539,6 +662,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     // HANDLE PERMISSIONS
+
+    fun getLocationPermission() {
+        /*
+     * Request location permission, so that we can get the location of the
+     * device. The result of the permission request is handled by a callback,
+     * onRequestPermissionsResult.
+     */
+        if (ContextCompat.checkSelfPermission(applicationContext,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mLocationPermissionGranted = true
+            getDeviceLocation()
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
+        }
+    }
 
     private fun getPhoneCallPermission() {
         /*
@@ -560,8 +699,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>,
                                             grantResults: IntArray) {
+        mLocationPermissionGranted = false
         mPhoneCallPermissionGranted = false
         when (requestCode) {
+            PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION -> {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mLocationPermissionGranted = true
+                }
+            }
             PERMISSIONS_REQUEST_PHONE_CALL -> {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -570,6 +716,27 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
         }
+    }
+
+    fun setLoading(type : Boolean, onoff : Boolean){
+        val fllp : DrawerLayout.LayoutParams = loading!!.layoutParams as DrawerLayout.LayoutParams
+        if(onoff){
+            if(type){
+                fllp.setMargins(0,0,0,0)
+                loading!!.background = resources.getDrawable(R.drawable.login_screen)
+                loading!!.findViewById<TextView>(R.id.title_loading).setTextColor(resources.getColor(R.color.colorWhite))
+                loading!!.findViewById<TextView>(R.id.label_loading).setTextColor(resources.getColor(R.color.colorWhite))
+            }else{
+                val size = calculateActionBar()
+                fllp.setMargins(0,size,0,size)
+                loading!!.setBackgroundColor(resources.getColor(R.color.colorWhite))
+                loading!!.findViewById<TextView>(R.id.title_loading).setTextColor(resources.getColor(R.color.colorWhite))
+                loading!!.findViewById<TextView>(R.id.label_loading).setTextColor(resources.getColor(R.color.colorPrimaryDark))
+            }
+            loading!!.visibility = VISIBLE
+        }
+        else
+            loading!!.visibility = GONE
     }
 
 }

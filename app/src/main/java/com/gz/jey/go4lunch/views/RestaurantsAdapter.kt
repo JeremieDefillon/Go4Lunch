@@ -19,6 +19,7 @@ class RestaurantsAdapter
         private val key: String,
         private val startPosition: LatLng,
         private val results: List<Result>,
+        private val total: Int,
         private val glide: RequestManager,
         // FOR COMMUNICATION
         private val callback: Listener) : RecyclerView.Adapter<RestaurantsViewHolder>() {
@@ -46,7 +47,7 @@ class RestaurantsAdapter
      * UPDATE VIEW HOLDER WITH NEWS
      */
     override fun onBindViewHolder(viewHolder: RestaurantsViewHolder, position: Int) {
-        viewHolder.updateRestaurants(this.key, context!!, this.startPosition, this.results[position], this.callback)
+        viewHolder.updateRestaurants(this.key, context!!, this.total, this.startPosition, this.results[position], this.callback)
     }
 
     /**

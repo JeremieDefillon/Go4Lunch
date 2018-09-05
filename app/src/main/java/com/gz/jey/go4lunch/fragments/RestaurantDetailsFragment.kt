@@ -18,10 +18,10 @@ import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.api.UserHelper
 import com.gz.jey.go4lunch.models.Contact
 import com.gz.jey.go4lunch.models.Details
-import com.gz.jey.go4lunch.models.Result
+import com.gz.jey.go4lunch.models.DetailsResult
 import com.gz.jey.go4lunch.utils.ApiPhoto
 import com.gz.jey.go4lunch.utils.ApiStreams
-import com.gz.jey.go4lunch.utils.CalculateRate
+import com.gz.jey.go4lunch.utils.CalculateRatio
 import com.gz.jey.go4lunch.utils.SetImageColor
 import com.gz.jey.go4lunch.views.DetailsAdapter
 import io.reactivex.disposables.Disposable
@@ -38,9 +38,10 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     private var disposable: Disposable? = null
 
     private var results: ArrayList<Contact>? = null
-    private var resultDetails: Details? = null
+    private var restaurant: DetailsResult? = null
     private var detailsAdapter: DetailsAdapter? = null
-    private var restaurant : Result? = null
+
+    private var placeId : String? = null
 
     // FOR DESIGN
     private var recyclerView: RecyclerView? = null
@@ -131,6 +132,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
      * to set the details
      */
     private fun setDetails(details: Details){
+        restaurant = details.result
 
         val imgLink = ApiPhoto.getPhotoURL(500, restaurant!!.photos[0].photoReference, getString(R.string.google_maps_key))
         Glide.with(this)
@@ -138,9 +140,9 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
                 .into(restaurantImage!!)
 
         restaurantName!!.text = if(restaurant!!.name.length>25) restaurant!!.name.substring(0,22)+" ..." else restaurant!!.name
-        restaurantAddress!!.text = restaurant!!.formattedAddress
+        restaurantAddress!!.text = restaurant!!.address
 
-        when(CalculateRate.getRateOn3(restaurant!!.rating)){
+        when(CalculateRatio.getRateOn3(restaurant!!.rating)){
             1 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimary)))
                 this.firstStar!!.visibility = View.VISIBLE
             }
@@ -160,7 +162,8 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
         callTxt!!.text = getString(R.string.call)
         var number = details.result.formattedPhoneNumber
-        if(number!=null && !number.isEmpty() && restaurant!!.openingHours.openNow){
+        val open = restaurant!!.openingHours.openNow
+        if(number!=null && !number.isEmpty() && open!=null && open){
             number = number.replace(" ","")
             call!!.setOnClickListener {
                 mainActivity!!.callTo(number)
@@ -172,12 +175,16 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             callImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.call, ContextCompat.getColor(mainActivity!!, R.color.colorGrey)))
         }
 
-
-        like!!.setOnClickListener {
-            // DO LIKE
-        }
         likeTxt!!.text = getString(R.string.like)
-        likeImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
+        var liked = false
+        for (l in mainActivity!!.user!!.restLiked){
+            if(l==placeId) {
+                liked = true
+                break
+            }
+        }
+
+        setLike(liked)
 
         websiteTxt!!.text = getString(R.string.website)
         if(details.result.website!=null && !details.result.website.isEmpty()){
@@ -204,7 +211,15 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             }
         }
 
-        UpdateUI(restaurant!!.workmates as ArrayList<Contact>)
+        val workmate : ArrayList<Contact> = ArrayList()
+
+        for (c in mainActivity!!.contacts){
+            if(c.whereEatID == placeId){
+                workmate.add(c)
+            }
+        }
+
+        UpdateUI(workmate)
     }
 
     private fun goToRestaurant(){
@@ -228,20 +243,39 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             goToRestaurant()
         }
     }
+
+    private fun setLike(liked : Boolean){
+        if(liked){
+            like!!.setOnClickListener {
+                val nliked = false
+                mainActivity!!.user!!.restLiked.remove(placeId)
+                UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
+                setLike(nliked)
+            }
+            likeTxt!!.setTextColor(resources.getColor(R.color.colorAccent))
+            likeImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorAccent)))
+        }else{
+            like!!.setOnClickListener {
+                val nliked = true
+                mainActivity!!.user!!.restLiked.add(placeId!!)
+                UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
+                setLike(nliked)
+            }
+            likeTxt!!.setTextColor(resources.getColor(R.color.colorPrimaryDark))
+            likeImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
+        }
+    }
+
+
     // -------------------
     // HTTP (RxJAVA)
     // -------------------
     private fun executeHttpRequestWithRetrofit(req : String) {
         when (req) {
             "place" -> {
-                for (r in mainActivity!!.place!!.results){
-                    if (r.placeId== mainActivity!!.restaurantID){
-                        restaurant=r
-                        break
-                    }
-                }
+                placeId = mainActivity!!.restaurantID
 
-                disposable = ApiStreams.streamFetchDetails(getString(R.string.google_maps_key), restaurant!!.placeId, mainActivity!!.lang)
+                disposable = ApiStreams.streamFetchDetails(getString(R.string.google_maps_key), placeId!!, mainActivity!!.lang)
                         .subscribeWith(object : DisposableObserver<Details>(){
                             override fun onNext(details: Details) {
                                 setDetails(details)
@@ -277,9 +311,9 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             view!!.findViewById<TextView>(R.id.no_result_text).visibility = View.VISIBLE
             view!!.findViewById<TextView>(R.id.no_result_text).text = getString(R.string.none_joining)
         }
+
+        mainActivity!!.setLoading(false, false)
     }
-
-
 
     /**
      * to Destroy fragment

@@ -45,6 +45,7 @@ public class Result {
     @Expose
     private List<String> types = null;
 
+    private int liked = 0;
     private List<Contact> workmates = new ArrayList();
 
     public String getFormattedAddress() {
@@ -149,6 +150,14 @@ public class Result {
 
     public void setWorkmates(List<Contact> workmates) {
         this.workmates = workmates;
+    }
+
+    public int getLiked() {
+        return liked;
+    }
+
+    public void setLiked(int liked) {
+        this.liked = liked;
     }
 
 }

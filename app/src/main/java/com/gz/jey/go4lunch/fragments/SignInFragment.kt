@@ -68,36 +68,14 @@ class SignInFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         super.onActivityResult(requestCode, resultCode, data)
         // 4 - Handle SignIn Activity response on activity result
-        this.handleResponseAfterSignIn(requestCode, resultCode, data)
+        mainActivity!!.handleResponseAfterSignIn(requestCode, resultCode, data)
     }
 
     // --------------------
     // UTILS
     // --------------------
 
-    /**
-     * @param requestCode Int
-     * @param resultCode Int
-     * @param data Intent
-     */
-    private fun handleResponseAfterSignIn(requestCode: Int, resultCode: Int, data: Intent) {
-        val response = IdpResponse.fromResultIntent(data)
-        if (requestCode == mainActivity?.signInFragment?.rcSignIn ?: Int) {
-            if (resultCode == Activity.RESULT_OK) {
-                // SUCCESS
-                mainActivity?.updateUIAfterRESTRequestsCompleted(SIGN_IN_TASK)
-                mainActivity?.popupmsg(getString(R.string.connection_succeed))
-            } else { // ERRORS
-                if (response == null) {
-                    mainActivity?.popupmsg(getString(R.string.error_authentication_canceled))
-                } else if (response.error?.equals(ErrorCodes.NO_NETWORK) ?: (false)) {
-                    mainActivity?.popupmsg(getString(R.string.error_no_internet))
-                } else if (response.error?.equals(ErrorCodes.UNKNOWN_ERROR) ?: (false)) {
-                    mainActivity?.popupmsg(getString(R.string.error_unknown_error))
-                }
-            }
-        }
-    }
+
 
 
     /**

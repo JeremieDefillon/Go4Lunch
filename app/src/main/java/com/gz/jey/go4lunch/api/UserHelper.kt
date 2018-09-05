@@ -11,7 +11,7 @@ import java.util.*
 
 object UserHelper {
 
-    private val COLLECTION_NAME : String = "users"
+    private const val COLLECTION_NAME : String = "users"
 
     // --- COLLECTION REFERENCE ---
 

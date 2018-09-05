@@ -49,7 +49,7 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
         super.onViewCreated(view, savedInstanceState)
         setRecyclerView()
         setOnClickRecyclerView()
-        mainActivity!!.checkUserInFirestore()
+        initList()
     }
 
     /**
@@ -83,9 +83,10 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
                     val rid = mainActivity!!.contacts[position].whereEatID
                     val nam = mainActivity!!.contacts[position].whereEatName
                     if(!rid.isEmpty()){
+                        mainActivity!!.setLoading(false, true)
                         mainActivity!!.restaurantID = rid
                         mainActivity!!.restaurantName = nam
-                        mainActivity!!.setDetailsRestaurant()
+                        mainActivity!!.setFragment(4)
                     }else{
                         val cont = mainActivity!!.contacts[position].username
                         val unch = getString(R.string.doesnt_chosen)
@@ -94,7 +95,7 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
                 }
     }
 
-    fun initList() {
+    private fun initList() {
         updateUI(mainActivity!!.contacts)
     }
 
@@ -117,6 +118,7 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
             view!!.findViewById<TextView>(R.id.no_result_text).visibility = View.VISIBLE
             view!!.findViewById<TextView>(R.id.no_result_text).text = getString(R.string.none_workmate)
         }
+        mainActivity!!.setLoading(false, false)
     }
 
     /**

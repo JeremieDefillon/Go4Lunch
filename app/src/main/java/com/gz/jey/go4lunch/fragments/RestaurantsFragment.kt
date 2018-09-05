@@ -55,7 +55,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         super.onViewCreated(view, savedInstanceState)
         setRecyclerView()
         setOnClickRecyclerView()
-        executeHttpRequestWithRetrofit("place")
+        UpdateUI()
     }
 
     /**
@@ -68,6 +68,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
                         getString(R.string.google_api_key),
                         mainActivity!!.mLastKnownLocation!!,
                         results!!,
+                        mainActivity!!.contacts.size+1,
                         Glide.with(this),
                         this)
 
@@ -87,61 +88,25 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
     private fun setOnClickRecyclerView() {
         ItemClickSupport.addTo(recyclerView!!, R.layout.restaurant_item)
                 .setOnItemClickListener { _, position, _ ->
+                    mainActivity!!.setLoading(false, true)
                     mainActivity!!.restaurantID = mainActivity!!.place!!.results[position].placeId
                     mainActivity!!.restaurantName = mainActivity!!.place!!.results[position].name
-                    mainActivity!!.setDetailsRestaurant()
+                    mainActivity!!.setFragment(4)
                 }
-    }
-
-    // -------------------
-    // HTTP (RxJAVA)
-    // -------------------
-    private fun executeHttpRequestWithRetrofit(req : String) {
-        when (req) {
-            "place" -> {
-                val location : LatLng =
-                    if(mainActivity!!.mLastKnownLocation == null) mainActivity!!.mDefaultLocation!!
-                    else mainActivity!!.mLastKnownLocation!!
-                disposable = ApiStreams.streamFetchRestaurants(getString(R.string.google_maps_key), location, mainActivity!!.lang)
-                    .subscribeWith(object : DisposableObserver<Place>(){
-                    override fun onNext(place: Place) {
-                        UpdateUI(place)
-                    }
-
-                    override fun onError(e: Throwable) {
-                        Log.e("MAP RX", e.toString())
-                    }
-
-                    override fun onComplete() {}
-                })
-            }
-        }
     }
 
     /**
      * @param place Place
      * called while request get back models
      */
-    private fun UpdateUI(place: Place) {
-        mainActivity!!.place = place
+    private fun UpdateUI() {
+        val place = mainActivity!!.place
         if (results != null)
             results!!.clear()
         else
             results = ArrayList()
 
-        results!!.addAll(place.results)
-
-        for(c in mainActivity!!.contacts){
-            if(!c.whereEatID.isEmpty()){
-                for(r in place.results){
-                    if(r.placeId==c.whereEatID)
-                        if(!r.workmates.contains(c)) {
-                            r.workmates.add(c)
-                            break
-                        }
-                }
-            }
-        }
+        results!!.addAll(place!!.results)
 
         if (results!!.size != 0) {
             mView!!.findViewById<TextView>(R.id.no_result_text).visibility = GONE
@@ -150,6 +115,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
             view!!.findViewById<TextView>(R.id.no_result_text).visibility = VISIBLE
             view!!.findViewById<TextView>(R.id.no_result_text).text = getString(R.string.none_restaurant)
         }
+        mainActivity!!.setLoading(false, false)
     }
 
     /**

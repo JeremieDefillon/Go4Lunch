@@ -63,5 +63,7 @@
     <string name="none_joining">There is none workmates coming yet !</string>
     <string name="none_restaurant">There is none restaurant found !</string>
     <string name="none_workmate">There is none workmates registered yet !</string>
+    <string name="open">Open</string>
+    <string name="close">Closed</string>
 
 </resources>
