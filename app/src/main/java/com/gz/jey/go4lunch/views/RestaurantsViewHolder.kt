@@ -6,6 +6,7 @@ import android.graphics.Typeface.BOLD
 import android.graphics.Typeface.ITALIC
 import android.os.Build
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.ContextCompat.getDrawable
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ImageView
@@ -113,10 +114,16 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
             }
         }
 
-        val imgLink = ApiPhoto.getPhotoURL(100, res.photos[0].photoReference, key)
-        Glide.with(context)
-                .load(imgLink)
-                .into(restaurantImg!!)
+        if(res.photos!=null) {
+            val imgLink = ApiPhoto.getPhotoURL(100, res.photos[0].photoReference, key)
+            Glide.with(context)
+                    .load(imgLink)
+                    .into(restaurantImg!!)
+        }else
+            restaurantImg!!.background = getDrawable(context, R.drawable.no_pic)
+
+
+
 
 
         callbackWeakRef = WeakReference(callback)

@@ -1,7 +1,8 @@
 package com.gz.jey.go4lunch.activities
 
-import android.annotation.SuppressLint
+ import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -17,15 +18,14 @@ import android.support.v7.app.ActionBar
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
-import android.text.Editable
 import android.text.TextUtils
-import android.text.TextWatcher
 import android.util.Log
 import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -34,10 +34,9 @@ import com.firebase.ui.auth.ErrorCodes
 import com.firebase.ui.auth.IdpResponse
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.places.GeoDataClient
-import com.google.android.gms.location.places.PlaceDetectionClient
-import com.google.android.gms.location.places.Places
+import com.google.android.gms.location.places.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
@@ -46,6 +45,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.gz.jey.go4lunch.R
+import com.gz.jey.go4lunch.adapters.PlacesAdapter
 import com.gz.jey.go4lunch.api.UserHelper
 import com.gz.jey.go4lunch.fragments.*
 import com.gz.jey.go4lunch.models.Contact
@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var restaurantsFragment: RestaurantsFragment? = null
     private var workmatesFragment: WorkmatesFragment? = null
     private var detailsFragment: RestaurantDetailsFragment? = null
+    lateinit var placesAdapter: PlacesAdapter
 
     // FOR PERMISSIONS
     private val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 34
@@ -107,6 +108,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     var email : String?= null
     private var number : String? = null
     var lang = 1
+    var input : String? = null
 
     // FOR RESTAURANT SELECTOR
     var restaurantID: String? = null
@@ -181,13 +183,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
    // Configure SearchBar
     private fun configureSearchBar(tab : Int) {
-        val searchText = searchBar!!.findViewById<EditText>(R.id.search_txt)
-        val backSearch = searchBar!!.findViewById<ImageButton>(R.id.back_search)
+        val searchText = searchBar!!.findViewById<AutoCompleteTextView>(R.id.search_txt)
+        //val backSearch = searchBar!!.findViewById<ImageButton>(R.id.back_search)
         val speechSearch = searchBar!!.findViewById<ImageButton>(R.id.speech_search)
 
         if(tab == 3) searchText.hint = getString(R.string.search_workmates)
         else searchText.hint = getString(R.string.search_restaurants)
 
+       val typeFilter = AutocompleteFilter.Builder()
+               .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
+               .build()
+
+       val bounds = LatLngBounds(LatLng(mLastKnownLocation!!.latitude-0.01, mLastKnownLocation!!.longitude-0.01), LatLng(mLastKnownLocation!!.latitude+0.01, mLastKnownLocation!!.longitude+0.01))
+
+       placesAdapter = PlacesAdapter(this, android.R.layout.simple_list_item_1, mGeoDataClient!!, typeFilter, bounds)
+       searchText.setAdapter(placesAdapter)
+
+       searchText.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
+           // This is your listview's selected item
+           val item = parent.getItemAtPosition(position) as AutocompletePrediction
+           restaurantID = item.placeId
+           setFragment(4)
+           toolbar!!.visibility = VISIBLE
+           searchBar!!.visibility = GONE
+       }
+/*
         searchText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) { }
             override fun onTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) { }
@@ -202,6 +222,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                     workmatesFragment!!.updateUI(contactsFetched)
                 }else{
+                    input = editable.toString()
                     execRequest(SEARCH_FOR)
                 }
             }
@@ -213,7 +234,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
        speechSearch.setOnClickListener{
 
-       }
+       }*/
    }
 
     /**
@@ -347,6 +368,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      * Change Fragment
      */
     fun setFragment(index: Int){
+        hideKeyboard()
         var fragment : Fragment? = null
         invalidateOptionsMenu()
         when(index){
@@ -543,20 +565,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             CONTACTS -> {
                 checkUserInFirestore()
             }
-            SEARCH_FOR ->{
-                disposable = ApiStreams.streamFetchRestaurants(getString(R.string.google_maps_key), mLastKnownLocation!!, lang)
-                    .subscribeWith(object : DisposableObserver<Place>() {
-                        override fun onNext(place: Place) {
-                            setAllRestaurants(place)
-                        }
 
-                        override fun onError(e: Throwable) {
-                            Log.e("MAP RX", e.toString())
-                        }
-
-                        override fun onComplete() {}
-                    })
-            }
         }
     }
 
@@ -737,6 +746,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         else
             loading!!.visibility = GONE
+    }
+
+    fun hideKeyboard() {
+        try {
+            val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
     }
 
 }

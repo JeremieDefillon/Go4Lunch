@@ -30,4 +30,5 @@ interface ApiService {
             @Query("language") language: String,
             @Query("key") key: String
     ) : Observable<Details>
+
 }

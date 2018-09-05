@@ -31,29 +31,23 @@
             app:theme="@style/SearchBarStyle"
             android:visibility="gone">
 
-            <ImageButton
-                android:id="@+id/back_search"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/places_ic_search"
-                android:layout_margin="5dp"
-                />
-
-            <EditText
+            <AutoCompleteTextView
                 android:id="@+id/search_txt"
-                android:layout_width="0dp"
-                android:layout_weight="8"
-                android:layout_height="match_parent"
-                android:background="@color/colorTransparent"
-                android:hint="@string/search_restaurants"/>
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:background="@null"
+                android:drawableStart="@drawable/search"
+                android:hint="@string/search_restaurants"
+                android:lines="1"
+                android:paddingLeft="7dp"
+                android:paddingRight="7dp" />
 
             <ImageButton
                 android:id="@+id/speech_search"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@drawable/ic_microphone_black_48dp"
+                android:background="@drawable/mic"
                 android:layout_margin="5dp"
                 />
         </LinearLayout>
