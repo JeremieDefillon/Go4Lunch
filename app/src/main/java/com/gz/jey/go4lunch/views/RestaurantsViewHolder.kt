@@ -8,6 +8,7 @@ import android.os.Build
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.ContextCompat.getDrawable
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -67,50 +68,58 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
 
         this.address!!.text = res.formattedAddress
         this.name!!.text = res.name
-        var open = false
-        var oc = ""
-        if(res.openingHours==null || res.openingHours.openNow==null){
-            oc = ""
+        val open : Boolean
+        val oc : String
+        when {
+            res.openingHours==null || res.openingHours.openNow==null -> {
+                oc = ""
+                open = false
+            }
+            res.openingHours.openNow -> {
+                oc = context.getString(R.string.open)
+                open = true
+            }
+            else -> {
+                oc = context.getString(R.string.close)
+                open = false
+            }
         }
-        else if(res.openingHours.openNow) {
-            oc = context.getString(R.string.open)
-            open = true
-        }
-        else {
-            oc = context.getString(R.string.close)
-            open = false
-        }
+
+        val googleStar = SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary))
+        val likeStar = SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent))
+        val emptyStar = SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorTransparent))
 
         this.openTime!!.text = oc
         setTime(context, open)
         val dist = SphericalUtil.computeDistanceBetween(startLatLng, LatLng(res.geometry.location.lat, res.geometry.location.lng))
         this.distance!!.text = getDistance(dist)
         val amount = res.workmates.size
-        this.workmatesAmount!!.text = "($amount)"
+        val amString = "($amount)"
+        this.workmatesAmount!!.text = amString
         this.workmatesIcon!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.perm_identity, Color.BLACK))
         when(CalculateRatio.getRateOn3(res.rating)){
-            1 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorTransparent)))
-                this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorTransparent)))
+            1 -> {this.firstStar!!.setImageDrawable(googleStar)
+                this.secondStar!!.setImageDrawable(emptyStar)
+                this.thirdStar!!.setImageDrawable(emptyStar)
             }
-            2 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorTransparent)))
+            2 -> {this.firstStar!!.setImageDrawable(googleStar)
+                this.secondStar!!.setImageDrawable(googleStar)
+                this.thirdStar!!.setImageDrawable(emptyStar)
             }
-               3 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
-                this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorPrimary)))
+               3 -> {this.firstStar!!.setImageDrawable(googleStar)
+                this.secondStar!!.setImageDrawable(googleStar)
+                this.thirdStar!!.setImageDrawable(googleStar)
             }
         }
 
         when(CalculateRatio.getLike(res.liked, allContact)){
-            1 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))}
-            2 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
-                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
+            1 -> {this.firstStar!!.setImageDrawable(likeStar)}
+            2 -> {this.firstStar!!.setImageDrawable(likeStar)
+                this.secondStar!!.setImageDrawable(likeStar)
             }
-            3 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
-                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
-                this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.star_rate, ContextCompat.getColor(context, R.color.colorAccent)))
+            3 -> {this.firstStar!!.setImageDrawable(likeStar)
+                this.secondStar!!.setImageDrawable(likeStar)
+                this.thirdStar!!.setImageDrawable(likeStar)
             }
         }
 

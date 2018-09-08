@@ -140,7 +140,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
                break
             }
         }
-        mainActivity!!.setFragment(4)
+        mainActivity!!.execRequest(mainActivity!!.DETAILS)
         return true
     }
 

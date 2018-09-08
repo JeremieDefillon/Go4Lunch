@@ -4,14 +4,6 @@ import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
-import android.view.MenuItem
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
-import com.gz.jey.go4lunch.R
 
 object SetImageColor{
 
@@ -32,4 +24,5 @@ object SetImageColor{
 
             return resultBitmap
         }
+
 }

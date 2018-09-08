@@ -1,6 +1,5 @@
 package com.gz.jey.go4lunch.fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -9,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.activities.MainActivity
@@ -86,11 +84,11 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
                         mainActivity!!.setLoading(false, true)
                         mainActivity!!.restaurantID = rid
                         mainActivity!!.restaurantName = nam
-                        mainActivity!!.setFragment(4)
+                        mainActivity!!.execRequest(mainActivity!!.DETAILS)
                     }else{
                         val cont = mainActivity!!.contacts[position].username
                         val unch = getString(R.string.doesnt_chosen)
-                        mainActivity!!.popupmsg("$cont $unch")
+                        mainActivity!!.popupMsg("$cont $unch")
                     }
                 }
     }
@@ -113,11 +111,11 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
 
         if (contacts!!.size != 0) {
             mView!!.findViewById<TextView>(R.id.no_result_text).visibility = View.GONE
-            workmatesAdapter!!.notifyDataSetChanged()
         }else{
             view!!.findViewById<TextView>(R.id.no_result_text).visibility = View.VISIBLE
             view!!.findViewById<TextView>(R.id.no_result_text).text = getString(R.string.none_workmate)
         }
+        workmatesAdapter!!.notifyDataSetChanged()
         mainActivity!!.setLoading(false, false)
     }
 

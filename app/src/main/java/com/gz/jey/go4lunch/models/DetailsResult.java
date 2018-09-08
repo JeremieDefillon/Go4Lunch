@@ -14,6 +14,9 @@ public class DetailsResult {
     @SerializedName("international_phone_number")
     @Expose
     private String internationalPhoneNumber;
+    @SerializedName("place_id")
+    @Expose
+    private String placeId;
     @SerializedName("name")
     @Expose
     private String name;
@@ -32,6 +35,12 @@ public class DetailsResult {
     @SerializedName("rating")
     @Expose
     private Double rating;
+
+    private int liked;
+
+    @SerializedName("types")
+    @Expose
+    private List<String> types;
 
     public String getFormattedPhoneNumber() {
         return formattedPhoneNumber;
@@ -55,6 +64,14 @@ public class DetailsResult {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 
     public String getAddress() {
@@ -95,6 +112,22 @@ public class DetailsResult {
 
     public void setRating(Double rating) {
         this.rating = rating;
+    }
+
+    public int getLiked() {
+        return liked;
+    }
+
+    public void setLiked(int liked) {
+        this.liked = liked;
+    }
+
+    public List<String> getTypes() {
+        return types;
+    }
+
+    public void setTypes(List<String> types) {
+        this.types = types;
     }
 
 }

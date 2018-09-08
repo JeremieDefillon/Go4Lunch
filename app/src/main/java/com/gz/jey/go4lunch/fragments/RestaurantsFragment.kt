@@ -2,10 +2,8 @@ package com.gz.jey.go4lunch.fragments
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -13,16 +11,12 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
 import com.bumptech.glide.Glide
-import com.google.android.gms.maps.model.LatLng
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.activities.MainActivity
-import com.gz.jey.go4lunch.models.Place
 import com.gz.jey.go4lunch.models.Result
-import com.gz.jey.go4lunch.utils.ApiStreams
 import com.gz.jey.go4lunch.utils.ItemClickSupport
 import com.gz.jey.go4lunch.views.RestaurantsAdapter
 import io.reactivex.disposables.Disposable
-import io.reactivex.observers.DisposableObserver
 import java.util.*
 
 class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
@@ -55,7 +49,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         super.onViewCreated(view, savedInstanceState)
         setRecyclerView()
         setOnClickRecyclerView()
-        UpdateUI()
+        updateUI()
     }
 
     /**
@@ -91,7 +85,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
                     mainActivity!!.setLoading(false, true)
                     mainActivity!!.restaurantID = mainActivity!!.place!!.results[position].placeId
                     mainActivity!!.restaurantName = mainActivity!!.place!!.results[position].name
-                    mainActivity!!.setFragment(4)
+                    mainActivity!!.execRequest(mainActivity!!.DETAILS)
                 }
     }
 
@@ -99,7 +93,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
      * @param place Place
      * called while request get back models
      */
-    private fun UpdateUI() {
+    private fun updateUI() {
         val place = mainActivity!!.place
         if (results != null)
             results!!.clear()

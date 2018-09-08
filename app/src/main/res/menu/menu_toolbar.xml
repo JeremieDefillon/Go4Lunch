@@ -3,6 +3,7 @@
     android:id="@+id/menu">
 
         <item
+            android:visible="true"
             android:id="@+id/search_on"
             android:icon="@drawable/search"
             app:showAsAction="ifRoom"

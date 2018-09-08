@@ -1,14 +1,18 @@
 package com.gz.jey.go4lunch.fragments
 
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.BoringLayout
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -17,15 +21,11 @@ import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.api.UserHelper
 import com.gz.jey.go4lunch.models.Contact
-import com.gz.jey.go4lunch.models.Details
 import com.gz.jey.go4lunch.models.DetailsResult
 import com.gz.jey.go4lunch.utils.ApiPhoto
-import com.gz.jey.go4lunch.utils.ApiStreams
 import com.gz.jey.go4lunch.utils.CalculateRatio
 import com.gz.jey.go4lunch.utils.SetImageColor
 import com.gz.jey.go4lunch.views.DetailsAdapter
-import io.reactivex.disposables.Disposable
-import io.reactivex.observers.DisposableObserver
 import java.util.*
 
 
@@ -35,13 +35,11 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
     // FOR DATA
     var mainActivity: MainActivity? = null
-    private var disposable: Disposable? = null
+    private var metrics : DisplayMetrics? = null
 
-    private var results: ArrayList<Contact>? = null
+    private var contacts: ArrayList<Contact>? = null
     private var restaurant: DetailsResult? = null
     private var detailsAdapter: DetailsAdapter? = null
-
-    private var placeId : String? = null
 
     // FOR DESIGN
     private var recyclerView: RecyclerView? = null
@@ -74,6 +72,16 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         mView = inflater.inflate(R.layout.details_fragment, container, false)
         recyclerView = mView!!.findViewById(R.id.recycler_view)
 
+        metrics = DisplayMetrics()
+        mainActivity!!.windowManager.defaultDisplay.getMetrics(metrics)
+        val goButton = mView!!.findViewById<FrameLayout>(R.id.go_button)
+        val buttonSize = (metrics!!.widthPixels * 0.15f).toInt()
+        val layoutParams = FrameLayout.LayoutParams(buttonSize, buttonSize)
+        val margeTop = mView!!.findViewById<ImageView>(R.id.restaurant_image).layoutParams.height - (buttonSize/2)
+        val margeLeft = (metrics!!.widthPixels * 0.8f).toInt()
+        layoutParams.setMargins(margeLeft, margeTop, 0, 0 )
+        goButton!!.layoutParams = layoutParams
+
         return mView
     }
 
@@ -81,7 +89,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         super.onViewCreated(view, savedInstanceState)
         setViews(view)
         setRecyclerView()
-        executeHttpRequestWithRetrofit("place")
+        setDetails()
     }
 
     /**
@@ -112,12 +120,12 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
      * to set the RecyclerView
      */
     private fun setRecyclerView() {
-        results = ArrayList()
+        contacts = ArrayList()
         // Create newsAdapter passing in the sample user data
         detailsAdapter =
                 DetailsAdapter(getString(R.string.google_api_key),
                         mainActivity!!.mLastKnownLocation!!,
-                        results!!,
+                        contacts!!,
                         Glide.with(this),
                         this)
 
@@ -131,38 +139,75 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     /**
      * to set the details
      */
-    private fun setDetails(details: Details){
-        restaurant = details.result
+    private fun setDetails(){
+        restaurant = mainActivity!!.details!!.result
 
-        val imgLink = ApiPhoto.getPhotoURL(500, restaurant!!.photos[0].photoReference, getString(R.string.google_maps_key))
-        Glide.with(this)
-                .load(imgLink)
-                .into(restaurantImage!!)
+        if(mainActivity!!.user!!.restLiked.contains(restaurant!!.placeId))
+            restaurant!!.liked ++
+
+        for (c in mainActivity!!.contacts)
+            if(c.restLiked.contains(restaurant!!.placeId))
+                restaurant!!.liked ++
+
+        if(restaurant!!.photos != null) {
+            val imgLink = ApiPhoto.getPhotoURL(500, restaurant!!.photos[0].photoReference, getString(R.string.google_maps_key))
+            Glide.with(this)
+                    .load(imgLink)
+                    .into(restaurantImage!!)
+        }
 
         restaurantName!!.text = if(restaurant!!.name.length>25) restaurant!!.name.substring(0,22)+" ..." else restaurant!!.name
         restaurantAddress!!.text = restaurant!!.address
 
+        val emptyStar = SetImageColor.changeDrawableColor(context!!, R.drawable.star_rate, ContextCompat.getColor(context!!, R.color.colorTransparent))
+        val googleStar = SetImageColor.changeDrawableColor(context!!, R.drawable.star_rate, ContextCompat.getColor(context!!, R.color.colorPrimary))
+        val likeStar = SetImageColor.changeDrawableColor(context!!, R.drawable.star_rate, ContextCompat.getColor(context!!, R.color.colorAccent))
+
+        val xSize = (metrics!!.widthPixels * 0.009f)
+        val ySize = (metrics!!.widthPixels * 0.007f)
+
+        firstStar!!.x = xSize
+        firstStar!!.y = ySize
+        secondStar!!.x = xSize
+        secondStar!!.y = ySize
+        thirdStar!!.x = xSize
+        thirdStar!!.y = ySize
+
         when(CalculateRatio.getRateOn3(restaurant!!.rating)){
-            1 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimary)))
-                this.firstStar!!.visibility = View.VISIBLE
+            0->{this.firstStar!!.setImageDrawable(emptyStar)
+                this.secondStar!!.setImageDrawable(emptyStar)
+                this.thirdStar!!.setImageDrawable(emptyStar)
             }
-            2 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimary)))
-                this.firstStar!!.visibility = View.VISIBLE
-                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimary)))
-                this.secondStar!!.visibility = View.VISIBLE
+            1 -> {this.firstStar!!.setImageDrawable(googleStar)
+                this.secondStar!!.setImageDrawable(emptyStar)
+                this.thirdStar!!.setImageDrawable(emptyStar)
             }
-            3 -> {this.firstStar!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimary)))
-                this.firstStar!!.visibility = View.VISIBLE
-                this.secondStar!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimary)))
-                this.secondStar!!.visibility = View.VISIBLE
-                this.thirdStar!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimary)))
-                this.thirdStar!!.visibility = View.VISIBLE
+            2 -> {this.firstStar!!.setImageDrawable(googleStar)
+                this.secondStar!!.setImageDrawable(googleStar)
+                this.thirdStar!!.setImageDrawable(emptyStar)
+            }
+            3 -> {this.firstStar!!.setImageDrawable(googleStar)
+                this.secondStar!!.setImageDrawable(googleStar)
+                this.thirdStar!!.setImageDrawable(googleStar)
+            }
+        }
+
+        when(CalculateRatio.getLike(restaurant!!.liked, mainActivity!!.contacts.size+1)){
+            1 -> {this.firstStar!!.setImageDrawable(likeStar)}
+            2 -> {this.firstStar!!.setImageDrawable(likeStar)
+                this.secondStar!!.setImageDrawable(likeStar)
+            }
+            3 -> {this.firstStar!!.setImageDrawable(likeStar)
+                this.secondStar!!.setImageDrawable(likeStar)
+                this.thirdStar!!.setImageDrawable(likeStar)
             }
         }
 
         callTxt!!.text = getString(R.string.call)
-        var number = details.result.formattedPhoneNumber
-        val open = restaurant!!.openingHours.openNow
+        var number = restaurant!!.formattedPhoneNumber
+        var open : Boolean? = null
+        if(restaurant!!.openingHours != null)
+            open = restaurant!!.openingHours.openNow
         if(number!=null && !number.isEmpty() && open!=null && open){
             number = number.replace(" ","")
             call!!.setOnClickListener {
@@ -178,7 +223,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         likeTxt!!.text = getString(R.string.like)
         var liked = false
         for (l in mainActivity!!.user!!.restLiked){
-            if(l==placeId) {
+            if(l==restaurant!!.placeId) {
                 liked = true
                 break
             }
@@ -187,9 +232,9 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         setLike(liked)
 
         websiteTxt!!.text = getString(R.string.website)
-        if(details.result.website!=null && !details.result.website.isEmpty()){
+        if(restaurant!!.website!=null && !restaurant!!.website.isEmpty()){
             website!!.setOnClickListener {
-                mainActivity!!.openWebsite(details.result.website)
+                mainActivity!!.openWebsite(restaurant!!.website)
             }
             websiteTxt!!.setTextColor(resources.getColor(R.color.colorPrimaryDark))
             websiteImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.world, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
@@ -214,12 +259,13 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         val workmate : ArrayList<Contact> = ArrayList()
 
         for (c in mainActivity!!.contacts){
-            if(c.whereEatID == placeId){
+            if(c.whereEatID == restaurant!!.placeId){
+                Log.d("CONTACT" , c.username)
                 workmate.add(c)
             }
         }
 
-        UpdateUI(workmate)
+        updateUI(workmate)
     }
 
     private fun goToRestaurant(){
@@ -248,7 +294,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         if(liked){
             like!!.setOnClickListener {
                 val nliked = false
-                mainActivity!!.user!!.restLiked.remove(placeId)
+                mainActivity!!.user!!.restLiked.remove(restaurant!!.placeId)
                 UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
                 setLike(nliked)
             }
@@ -257,7 +303,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         }else{
             like!!.setOnClickListener {
                 val nliked = true
-                mainActivity!!.user!!.restLiked.add(placeId!!)
+                mainActivity!!.user!!.restLiked.add(restaurant!!.placeId)
                 UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
                 setLike(nliked)
             }
@@ -267,44 +313,20 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     }
 
 
-    // -------------------
-    // HTTP (RxJAVA)
-    // -------------------
-    private fun executeHttpRequestWithRetrofit(req : String) {
-        when (req) {
-            "place" -> {
-                placeId = mainActivity!!.restaurantID
-
-                disposable = ApiStreams.streamFetchDetails(getString(R.string.google_maps_key), placeId!!, mainActivity!!.lang)
-                        .subscribeWith(object : DisposableObserver<Details>(){
-                            override fun onNext(details: Details) {
-                                setDetails(details)
-                            }
-
-                            override fun onError(e: Throwable) {
-                                Log.e("DETAILS RX", e.toString())
-                            }
-
-                            override fun onComplete() {}
-                        })
-            }
-        }
-    }
-
 
     /**
      * @param place Place
      * called while request get back models
      */
-    private fun UpdateUI(workmate: ArrayList<Contact>) {
-        if (results != null)
-            results!!.clear()
+    private fun updateUI(workmate: ArrayList<Contact>) {
+        if(contacts!=null)
+            contacts!!.clear()
         else
-            results = ArrayList()
+            contacts = ArrayList()
 
-        results!!.addAll(workmate)
+        contacts!!.addAll(workmate)
 
-        if (results!!.size != 0) {
+        if (contacts!!.size != 0) {
             mView!!.findViewById<TextView>(R.id.no_result_text).visibility = View.GONE
             detailsAdapter!!.notifyDataSetChanged()
         }else{
@@ -313,22 +335,6 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         }
 
         mainActivity!!.setLoading(false, false)
-    }
-
-    /**
-     * to Destroy fragment
-     */
-    override fun onDestroy() {
-        super.onDestroy()
-        disposeWhenDestroy()
-    }
-
-    /**
-     * to destroy disposable and avoid memory leaks
-     */
-    private fun disposeWhenDestroy() {
-        if (disposable != null && !disposable!!.isDisposed)
-            disposable!!.dispose()
     }
 
     companion object {

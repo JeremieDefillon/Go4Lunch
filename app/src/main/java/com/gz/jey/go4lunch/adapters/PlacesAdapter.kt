@@ -9,11 +9,13 @@ import com.google.android.gms.common.data.DataBufferUtils
 import com.google.android.gms.location.places.AutocompleteFilter
 import com.google.android.gms.location.places.AutocompletePrediction
 import com.google.android.gms.location.places.GeoDataClient
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.tasks.RuntimeExecutionException
 import com.google.android.gms.tasks.Tasks
 import com.gz.jey.go4lunch.R
+import com.gz.jey.go4lunch.models.Details
+import com.gz.jey.go4lunch.utils.ApiStreams
+import io.reactivex.observers.DisposableObserver
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -24,11 +26,11 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
 
     var resultList: MutableList<AutocompletePrediction> = ArrayList()
     private val TAG = "PlaceAutoAdapter"
-    val mContext = context
-    val bounds = boundS_GREATER_SYDNEY
+    private val mContext = context
+    private val bounds = boundS_GREATER_SYDNEY
 
-    val geoDataClient = geoData
-    val mPlaceFilter = filter
+    private val geoDataClient = geoData
+    private val mPlaceFilter = filter
 
     override fun getCount(): Int {
         return resultList.size
@@ -73,12 +75,43 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
             }
 
             override fun publishResults(constraint: CharSequence?, results: Filter.FilterResults?) {
-                Log.v("results", "results==$results")
+                resultList.clear()
                 if (results != null && results.count > 0) {
                     // The API returned at least one result, update the data.
-                    resultList = results.values as ArrayList<AutocompletePrediction>
-                    Log.v("resultList", "resultList==$resultList")
-                    notifyDataSetChanged()
+                    val testList: MutableList<AutocompletePrediction> = results.values as ArrayList<AutocompletePrediction>
+                    val key = context.getString(R.string.google_maps_key)
+
+                    for ((i, r) in testList.withIndex()){
+                        ApiStreams.streamFetchDetails(key, r.placeId!!, 0)
+                                .subscribeWith(object : DisposableObserver<Details>() {
+                                    override fun onNext(details: Details) {
+                                        val fType = details!!.result.types
+                                        /*for(r in fType){
+                                            Log.d("TYPE" , r.toString())
+                                        }*/
+                                        if(fType.contains("meal_takeaway") || fType.contains("restaurant")) {
+                                            Log.d("TYPE" , fType.toString())
+                                            resultList.add(r)
+                                        }
+                                    }
+
+                                    override fun onError(e: Throwable) {
+                                        Log.e("FILTER RESULT RX", e.toString())
+                                        if(i==testList.size-1){
+                                            Log.d("resultList", "resultList==$resultList")
+                                            notifyDataSetChanged()
+                                        }
+                                    }
+
+                                    override fun onComplete() {
+                                        if(i==testList.size-1){
+                                            Log.d("resultList", "resultList==$resultList")
+                                            notifyDataSetChanged()
+                                        }
+                                    }
+                                })
+                    }
+
                 } else {
                     // The API did not return any results, invalidate the data set.
                     notifyDataSetInvalidated()

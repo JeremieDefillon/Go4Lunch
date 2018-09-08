@@ -5,11 +5,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
+ import android.graphics.drawable.Drawable
+ import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.NavigationView
-import android.support.v4.app.ActivityCompat
+ import android.support.design.widget.TextInputEditText
+ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
@@ -17,15 +19,19 @@ import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
-import android.text.TextUtils
-import android.util.Log
+ import android.support.v7.view.menu.MenuBuilder
+ import android.support.v7.widget.Toolbar
+ import android.text.Editable
+ import android.text.TextUtils
+ import android.text.TextWatcher
+ import android.util.Log
 import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import android.view.inputmethod.InputMethodManager
+ import android.view.MotionEvent
+ import android.view.View
+ import android.view.View.*
+ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -49,15 +55,18 @@ import com.gz.jey.go4lunch.adapters.PlacesAdapter
 import com.gz.jey.go4lunch.api.UserHelper
 import com.gz.jey.go4lunch.fragments.*
 import com.gz.jey.go4lunch.models.Contact
-import com.gz.jey.go4lunch.models.Place
+ import com.gz.jey.go4lunch.models.Details
+ import com.gz.jey.go4lunch.models.Place
 import com.gz.jey.go4lunch.models.User
 import com.gz.jey.go4lunch.utils.ApiStreams
 import com.gz.jey.go4lunch.utils.CheckIfTest
-import io.reactivex.disposables.Disposable
+ import com.gz.jey.go4lunch.utils.SetImageColor
+ import io.reactivex.disposables.Disposable
 import io.reactivex.observers.DisposableObserver
 import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
+
 
     // FRAGMENTS
     private val TAG = "MainActivity"
@@ -79,7 +88,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     val GPS = 10
     private val RESTAURANTS = 34
     val CONTACTS = 37
-    val SEARCH_FOR = 44
+    val DETAILS = 44
 
     // FOR POSITION
     var mGeoDataClient : GeoDataClient? = null
@@ -103,11 +112,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     var user : User? = null
     var contacts : ArrayList<Contact> = ArrayList()
     var place : Place? = null
+    var details : Details? = null
     private var tab = 0
     private var username : String?= null
     var email : String?= null
     private var number : String? = null
     var lang = 1
+    private var hiddenItems = false
     var input : String? = null
 
     // FOR RESTAURANT SELECTOR
@@ -150,7 +161,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         1
                     execRequest(GPS)
                 }
-                false -> {setFragment(0)}
+                false -> setFragment(0)
                 else -> setFragment(0)
             }
         else{
@@ -183,59 +194,131 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
    // Configure SearchBar
     private fun configureSearchBar(tab : Int) {
-        val searchText = searchBar!!.findViewById<AutoCompleteTextView>(R.id.search_txt)
-        //val backSearch = searchBar!!.findViewById<ImageButton>(R.id.back_search)
-        val speechSearch = searchBar!!.findViewById<ImageButton>(R.id.speech_search)
 
-        if(tab == 3) searchText.hint = getString(R.string.search_workmates)
-        else searchText.hint = getString(R.string.search_restaurants)
+       val searchWorkmate : TextInputEditText = searchBar!!.findViewById(R.id.search_workmate)
+       val searchRestaurant : AutoCompleteTextView = searchBar!!.findViewById(R.id.search_restaurant)
+       searchWorkmate.visibility = GONE
+       searchRestaurant.visibility = GONE
+       when(tab){
+           3->{
+                searchWorkmate.visibility = VISIBLE
+                setOnClickSearchWorkmate(searchWorkmate)
 
-       val typeFilter = AutocompleteFilter.Builder()
-               .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
-               .build()
+               //val backSearch = searchBar!!.findViewById<ImageButton>(R.id.back_search)
+               val speechSearch = searchBar!!.findViewById<ImageButton>(R.id.speech_search)
 
-       val bounds = LatLngBounds(LatLng(mLastKnownLocation!!.latitude-0.01, mLastKnownLocation!!.longitude-0.01), LatLng(mLastKnownLocation!!.latitude+0.01, mLastKnownLocation!!.longitude+0.01))
+               searchWorkmate.hint = getString(R.string.search_workmates)
+               searchWorkmate.addTextChangedListener(object : TextWatcher {
+                   override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) { }
+                   override fun onTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) { }
+                   override fun afterTextChanged(editable : Editable) {
+                        val contactsFetched : ArrayList<Contact> = ArrayList()
+                        contactsFetched.clear()
+                        for(c in contacts){
+                            if(c.username.contains(editable, true)){
+                                contactsFetched.add(c)
+                            }
+                        }
+                        workmatesFragment!!.updateUI(contactsFetched)
+                   }
+               })
+           }
+           else->{
+               //val backSearch = searchBar!!.findViewById<ImageButton>(R.id.back_search)
+               val speechSearch = searchBar!!.findViewById<ImageButton>(R.id.speech_search)
 
-       placesAdapter = PlacesAdapter(this, android.R.layout.simple_list_item_1, mGeoDataClient!!, typeFilter, bounds)
-       searchText.setAdapter(placesAdapter)
+               searchRestaurant.visibility = VISIBLE
+               setOnClickSearchRestaurant(searchRestaurant)
+               searchRestaurant.hint = getString(R.string.search_restaurants)
 
-       searchText.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
-           // This is your listview's selected item
-           val item = parent.getItemAtPosition(position) as AutocompletePrediction
-           restaurantID = item.placeId
-           setFragment(4)
-           toolbar!!.visibility = VISIBLE
-           searchBar!!.visibility = GONE
+               val typeFilter = AutocompleteFilter.Builder()
+                       .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
+                       .build()
+
+               val bounds = LatLngBounds(LatLng(mLastKnownLocation!!.latitude-0.01, mLastKnownLocation!!.longitude-0.01), LatLng(mLastKnownLocation!!.latitude+0.01, mLastKnownLocation!!.longitude+0.01))
+
+               placesAdapter = PlacesAdapter(this, android.R.layout.simple_list_item_1, mGeoDataClient!!, typeFilter, bounds)
+               searchRestaurant.setAdapter(placesAdapter)
+
+               searchRestaurant.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
+                   // This is your listview's selected item
+                   val item = parent.getItemAtPosition(position) as AutocompletePrediction
+                   restaurantID = item.placeId
+                   execRequest(DETAILS)
+                   toolbar!!.visibility = VISIBLE
+                   searchBar!!.visibility = GONE
+               }
+           }
        }
-/*
-        searchText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) { }
-            override fun onTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) { }
-            override fun afterTextChanged(editable : Editable) {
-                if(tab==3){
-                    val contactsFetched : ArrayList<Contact> = ArrayList()
-                    contactsFetched.clear()
-                    for(c in contacts){
-                        if(c.username.contains(editable, true)){
-                            contactsFetched.add(c)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setOnClickSearchRestaurant(input : AutoCompleteTextView){
+        val search = SetImageColor.changeDrawableColor(this ,R.drawable.search, resources.getColor(R.color.colorGrey))
+        val mic= SetImageColor.changeDrawableColor(this ,R.drawable.mic, resources.getColor(R.color.colorPrimary))
+        val cross = SetImageColor.changeDrawableColor(this ,R.drawable.close, resources.getColor(R.color.colorBlack))
+        input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, mic,null)
+
+        input.setOnTouchListener { _: View, event: MotionEvent ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                when {
+                    event.rawX >= (input.right - input.compoundDrawables[2].bounds.width()) -> {
+                        if (!input.isActivated) {
+
+                        } else {
+                            input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, mic,null)
+                            hideKeyboard()
+                            input.text = null
+                            input.isActivated = false
+                            toolbar!!.visibility = VISIBLE
+                            searchBar!!.visibility = GONE
                         }
                     }
-                    workmatesFragment!!.updateUI(contactsFetched)
-                }else{
-                    input = editable.toString()
-                    execRequest(SEARCH_FOR)
+                    else -> {
+                        input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, cross,null)
+                        input.requestFocus()
+                        input.isActivated = true
+                        displayKeyboard(input)
+                    }
                 }
             }
-        })
+            true
+        }
+    }
 
-       backSearch.setOnClickListener {
-           toolbar!!.visibility = VISIBLE
-           searchBar!!.visibility = GONE}
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setOnClickSearchWorkmate(input : TextInputEditText){
+        val search = SetImageColor.changeDrawableColor(this ,R.drawable.search, resources.getColor(R.color.colorGrey))
+        val mic= SetImageColor.changeDrawableColor(this ,R.drawable.mic, resources.getColor(R.color.colorPrimary))
+        val cross = SetImageColor.changeDrawableColor(this ,R.drawable.close, resources.getColor(R.color.colorBlack))
+        input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, mic,null)
 
-       speechSearch.setOnClickListener{
+        input.setOnTouchListener { _: View, event: MotionEvent ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                when {
+                    event.rawX >= (input.right - input.compoundDrawables[2].bounds.width()) -> {
+                        if (!input.isActivated) {
 
-       }*/
-   }
+                        } else {
+                            input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, mic,null)
+                            hideKeyboard()
+                            input.text = null
+                            input.isActivated = false
+                            toolbar!!.visibility = VISIBLE
+                            searchBar!!.visibility = GONE
+                        }
+                    }
+                    else -> {
+                        input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, cross,null)
+                        input.requestFocus()
+                        input.isActivated = true
+                        displayKeyboard(input)
+                    }
+                }
+            }
+            true
+        }
+    }
 
     /**
      * @return true
@@ -244,6 +327,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         toolMenu = menu
         // Inflate the menu and add it to the Toolbar
         menuInflater.inflate(R.menu.menu_toolbar, toolMenu)
+        if (hiddenItems)
+            for (i in 0 until menu.size())
+                menu.getItem(i).isVisible = false
+        else
+            for (i in 0 until menu.size())
+                menu.getItem(i).isVisible = true
         return true
     }
 
@@ -343,7 +432,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     restaurantName = user!!.whereEatName
                     setFragment(4)
                 }else{
-                    popupmsg(getString(R.string.none_restaurant))
+                    popupMsg(getString(R.string.none_restaurant))
                 }
             }
             R.id.settings -> setSettings()
@@ -367,8 +456,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      * @param index Int
      * Change Fragment
      */
-    fun setFragment(index: Int){
+    private fun setFragment(index: Int){
         hideKeyboard()
+
         var fragment : Fragment? = null
         invalidateOptionsMenu()
         when(index){
@@ -392,8 +482,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             4->{
                 Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
                 supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+                hiddenItems = true
                 toolbar!!.setNavigationOnClickListener {
-                    setFragment(tab)
+                    when(tab){
+                        1-> execRequest(GPS)
+                        2-> execRequest(RESTAURANTS)
+                        3-> execRequest(CONTACTS)
+                        else -> setFragment(tab)
+                    }
                 }
                 this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
                 bottom!!.visibility = GONE
@@ -406,6 +502,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             this.configureSearchBar(tab)
             Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
             setDrawerLayout()
+            hiddenItems = false
             bottom!!.visibility = VISIBLE
             setFrameLayoutMargin(true)
         }
@@ -415,7 +512,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             .commit()
     }
 
-    fun popupmsg(msg : String){
+    fun popupMsg(msg : String){
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
@@ -473,7 +570,45 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val whereEatName= contact.get("whereEatName").toString()
                     val restLiked= contact.get("restLiked") as ArrayList<String>
 
+
+                    // WAS TO RANDOM LIKE RESTAURANT AROUND FOR EACH CONTACT
+
+                    /*restLiked = ArrayList()
+                    val restarr : ArrayList<String> = arrayListOf(
+                            "ChIJJypu3ReF9EcRjy51n7iQntI",
+                            "ChIJdxbaUiKF9EcRASqCd2nR2fY",
+                            "ChIJjaz5ZweB9EcRPB08GrWO86A",
+                            "ChIJc_cbmVCZ9EcRcXmJrcgkqCA",
+                            "ChIJK07F2TyF9EcRSp1rXbjo1rQ",
+                            "ChIJySFR6t-E9EcRFY4mluDzDh8",
+                            "ChIJd8eqj9yP9EcRFBLkcqv0gcc",
+                            "ChIJwR1AZD2F9EcRqPkUqvtgjWA",
+                            "ChIJsc7XhjyF9EcRXXgd12G3ilY",
+                            "ChIJ___PN9aE9EcRDmXrj9pDUT4",
+                            "ChIJOU3chNeP9EcR31Wpvvvw_hk",
+                            "ChIJ5foaYSKF9EcRCu6X8JaFqHs",
+                            "ChIJE68UGyab9EcREFJiAZkv0Tk",
+                            "ChIJp7JQEyKF9EcR72wJu3P1fUw",
+                            "ChIJS5_cVzyF9EcRvDR_5krS0tY",
+                            "ChIJU8k9tjyF9EcRYxmfpRjhJ58",
+                            "ChIJ8V0s7C2d9EcRgmxKUU5Azt4",
+                            "ChIJteWKuGKF9EcRHgkivkIkmNs",
+                            "ChIJjTRFnjGF9EcR9u_DyAiBC7M",
+                            "ChIJscITJCKF9EcRYO2zkZMXEvE")
+
+
+                    val max = (10 until restarr.size).random()
+
+                    for (i in 0 until max){
+                        val rand = (0 until restarr.size).random()
+                        if(!restLiked.contains(restarr[rand]))
+                            restLiked.add(restarr[rand])
+                    }*/
+
+
                     val cntc = Contact(uid, username, urlPicture, whereEatID, whereEatName, restLiked)
+
+                    //UserHelper.updateContact(uid, cntc)
                     contacts.add(cntc)
                 }
             }
@@ -481,6 +616,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             setAllContacts()
         }
     }
+
+    fun ClosedRange<Int>.random() =
+            Random().nextInt((endInclusive + 1) - start) +  start
 
     // Http request that create user in firestore
     private fun createUserInFirestore(){
@@ -515,12 +653,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (resultCode == Activity.RESULT_OK) {
                 // SUCCESS
                 initActivity()
-                popupmsg(getString(R.string.connection_succeed))
+                popupMsg(getString(R.string.connection_succeed))
             } else { // ERRORS
                 when {
-                    response == null -> popupmsg(getString(R.string.error_authentication_canceled))
-                    response.error?.equals(ErrorCodes.NO_NETWORK) ?: (false) -> popupmsg(getString(R.string.error_no_internet))
-                    response.error?.equals(ErrorCodes.UNKNOWN_ERROR) ?: (false) -> popupmsg(getString(R.string.error_unknown_error))
+                    response == null -> popupMsg(getString(R.string.error_authentication_canceled))
+                    response.error?.equals(ErrorCodes.NO_NETWORK) ?: (false) -> popupMsg(getString(R.string.error_no_internet))
+                    response.error?.equals(ErrorCodes.UNKNOWN_ERROR) ?: (false) -> popupMsg(getString(R.string.error_unknown_error))
                 }
             }
         }
@@ -565,12 +703,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             CONTACTS -> {
                 checkUserInFirestore()
             }
+            DETAILS -> {
+                disposable = ApiStreams.streamFetchDetails(getString(R.string.google_maps_key), restaurantID!!, lang)
+                    .subscribeWith(object : DisposableObserver<Details>() {
+                        override fun onNext(details: Details) {
+                            setDetailsObject(details)
+                        }
 
+                        override fun onError(e: Throwable) {
+                            Log.e("DETAILS RX", e.toString())
+                        }
+
+                        override fun onComplete() {}
+                    })
+            }
         }
     }
 
     fun setAllRestaurants(place : Place){
         this.place = place
+
         if(contacts.size!=0)
             setAllContacts()
         else
@@ -583,9 +735,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if(user!!.restLiked.contains(r.placeId))
                     r.liked++
                 for(c in contacts){
+
                     if(c.restLiked.contains(r.placeId))
                         r.liked++
                 }
+
+                Log.d(r.placeId +" LIKED", r.liked.toString())
             }
 
             for(c in contacts){
@@ -607,6 +762,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    fun setDetailsObject(det: Details){
+        this.details = det
+        val fType = details!!.result.types
+
+        for(r in fType){
+            Log.d("TYPE" , r.toString())
+        }
+        if(fType.contains("meal_takeaway") || fType.contains("restaurant")) {
+            setFragment(4)
+        }else {
+            popupMsg("This is NOT a restaurant")
+        }
+    }
+
     @SuppressLint("MissingPermission")
     fun getDeviceLocation() {
         mFusedLocationProviderClient.lastLocation
@@ -616,7 +785,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     mLastKnownLocation = LatLng(task.result.latitude, task.result.longitude)
                     execRequest(RESTAURANTS)
                 } else {
-                    Log.w("MAP LOCATION", "getLastLocation:exception", task.exception)
                     Log.e("MAP LOCATION", "Exception: %s", task.exception)
                     // Prompt the user for permission.
                     getLocationPermission()
@@ -715,6 +883,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true
+                    getDeviceLocation()
                 }
             }
             PERMISSIONS_REQUEST_PHONE_CALL -> {
@@ -748,15 +917,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             loading!!.visibility = GONE
     }
 
-    fun hideKeyboard() {
+    private fun hideKeyboard() {
         try {
             val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
 
+    private fun displayKeyboard(input : View) {
+        try {
+            val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.showSoftInput(input, InputMethodManager.SHOW_FORCED)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
 }
+
 

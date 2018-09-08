@@ -36,6 +36,7 @@ object UserHelper {
         return UserHelper.getUsersCollection().document(uid).set(contact)
     }
 
+
     // --- GET ---
 
     fun getUser(uid : String) : Task<DocumentSnapshot>{
