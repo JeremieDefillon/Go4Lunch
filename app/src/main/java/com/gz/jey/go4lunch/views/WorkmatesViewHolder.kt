@@ -1,6 +1,7 @@
 package com.gz.jey.go4lunch.views
 
 import android.content.Context
+import android.support.v4.content.ContextCompat.getColor
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.TextView
@@ -42,8 +43,19 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
         val dontChoosen = context.getString(R.string.doesnt_chosen).toString()
 
         this.name!!.text = contact.username
-        this.action!!.text = if(!contact.whereEatID.isEmpty()) goEat else dontChoosen
         this.restaurant!!.text = contact.whereEatName
+
+        if(!contact.whereEatID.isEmpty()){
+            this.action!!.text = goEat
+            this.action!!.setTextColor(getColor(context,R.color.colorBlack))
+            this.name!!.setTextColor(getColor(context,R.color.colorBlack))
+            this.restaurant!!.setTextColor(getColor(context,R.color.colorAccent))
+        } else{
+            this.action!!.text = dontChoosen
+            this.action!!.setTextColor(getColor(context,R.color.colorGrey))
+            this.name!!.setTextColor(getColor(context,R.color.colorGrey))
+            this.restaurant!!.setTextColor(getColor(context,R.color.colorGrey))
+        }
 
         val imgLink = contact.urlPicture
         Glide.with(context)

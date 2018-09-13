@@ -1,15 +1,12 @@
 package com.gz.jey.go4lunch.fragments
 
-import android.app.Activity
 import android.content.Intent
-import android.support.v4.app.Fragment
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.ErrorCodes
-import com.firebase.ui.auth.IdpResponse
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.activities.MainActivity
 import java.util.*
@@ -18,7 +15,6 @@ class SignInFragment : Fragment() {
 
     var mainActivity: MainActivity? = null
     val rcSignIn : Int = 123
-    private val SIGN_IN_TASK = 98
 
     companion object {
         /**
@@ -71,19 +67,6 @@ class SignInFragment : Fragment() {
         mainActivity!!.handleResponseAfterSignIn(requestCode, resultCode, data)
     }
 
-    // --------------------
-    // UTILS
-    // --------------------
-
-
-
-
-    /**
-     * Destroy this Fragment
-     */
-    override fun onDestroy() {
-        super.onDestroy()
-    }
 }
 
 

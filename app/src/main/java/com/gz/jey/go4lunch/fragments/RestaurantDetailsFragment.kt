@@ -1,12 +1,10 @@
 package com.gz.jey.go4lunch.fragments
 
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.text.BoringLayout
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
@@ -26,6 +24,7 @@ import com.gz.jey.go4lunch.utils.ApiPhoto
 import com.gz.jey.go4lunch.utils.CalculateRatio
 import com.gz.jey.go4lunch.utils.SetImageColor
 import com.gz.jey.go4lunch.views.DetailsAdapter
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -102,7 +101,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         firstStar = view.findViewById(R.id.first_star)
         secondStar = view.findViewById(R.id.second_star)
         thirdStar = view.findViewById(R.id.third_star)
-
+ 
         call = view.findViewById(R.id.call)
         callTxt = view.findViewById(R.id.call_txt)
         callImg = view.findViewById(R.id.call_img)
@@ -213,10 +212,10 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             call!!.setOnClickListener {
                 mainActivity!!.callTo(number)
             }
-            callTxt!!.setTextColor(resources.getColor(R.color.colorPrimaryDark))
+            callTxt!!.setTextColor(ContextCompat.getColor(this.context!!, R.color.colorPrimaryDark))
             callImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.call, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
         }else{
-            callTxt!!.setTextColor(resources.getColor(R.color.colorGrey))
+            callTxt!!.setTextColor(ContextCompat.getColor(this.context!!, R.color.colorGrey))
             callImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.call, ContextCompat.getColor(mainActivity!!, R.color.colorGrey)))
         }
 
@@ -236,10 +235,10 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             website!!.setOnClickListener {
                 mainActivity!!.openWebsite(restaurant!!.website)
             }
-            websiteTxt!!.setTextColor(resources.getColor(R.color.colorPrimaryDark))
+            websiteTxt!!.setTextColor(ContextCompat.getColor(this.context!!, R.color.colorPrimaryDark))
             websiteImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.world, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
         }else{
-            websiteTxt!!.setTextColor(resources.getColor(R.color.colorGrey))
+            websiteTxt!!.setTextColor(ContextCompat.getColor(this.context!!, R.color.colorGrey))
             websiteImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.world, ContextCompat.getColor(mainActivity!!, R.color.colorGrey)))
         }
 
@@ -272,6 +271,10 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         selectRestaurant!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.check_circle, ContextCompat.getColor(mainActivity!!, R.color.colorAccent)))
         mainActivity!!.user!!.whereEatID = mainActivity!!.restaurantID!!
         mainActivity!!.user!!.whereEatName = mainActivity!!.restaurantName!!
+        val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.FRANCE)
+        val now : Calendar = Calendar.getInstance()
+        val nowF = df.format(now.time)
+        mainActivity!!.user!!.whereEatDate = nowF
         UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
         selectRestaurant!!.setOnClickListener {
             removeRestaurant()
@@ -284,6 +287,10 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         mainActivity!!.restaurantName = ""
         mainActivity!!.user!!.whereEatID = mainActivity!!.restaurantID!!
         mainActivity!!.user!!.whereEatName = mainActivity!!.restaurantName!!
+        val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.FRANCE)
+        val now : Calendar = Calendar.getInstance()
+        val nowF = df.format(now.time)
+        mainActivity!!.user!!.whereEatDate = nowF
         UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
         selectRestaurant!!.setOnClickListener {
             goToRestaurant()
@@ -298,7 +305,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
                 UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
                 setLike(nliked)
             }
-            likeTxt!!.setTextColor(resources.getColor(R.color.colorAccent))
+            likeTxt!!.setTextColor(ContextCompat.getColor(this.context!!, R.color.colorAccent))
             likeImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorAccent)))
         }else{
             like!!.setOnClickListener {
@@ -307,7 +314,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
                 UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
                 setLike(nliked)
             }
-            likeTxt!!.setTextColor(resources.getColor(R.color.colorPrimaryDark))
+            likeTxt!!.setTextColor(ContextCompat.getColor(this.context!!, R.color.colorPrimaryDark))
             likeImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.star_rate, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
         }
     }
@@ -315,7 +322,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
 
     /**
-     * @param place Place
+     * @param workmate ArrayList<Contact>
      * called while request get back models
      */
     private fun updateUI(workmate: ArrayList<Contact>) {

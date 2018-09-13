@@ -21,8 +21,8 @@ object UserHelper {
 
     // --- CREATE ---
 
-    fun createUser(uid : String, username : String, email: String, urlPicture : String, whereEatID : String, whereEatName : String, restLiked : ArrayList<String>) : Task<Void> {
-        val userToCreate = User(uid, username, email, urlPicture, whereEatID, whereEatName, restLiked)
+    fun createUser(uid : String, username : String, email: String, urlPicture : String, whereEatID : String, whereEatName : String, whereEatDate: String, restLiked : ArrayList<String>) : Task<Void> {
+        val userToCreate = User(uid, username, email, urlPicture, whereEatID, whereEatName, whereEatDate, restLiked)
         return UserHelper.getUsersCollection().document(uid).set(userToCreate)
     }
 

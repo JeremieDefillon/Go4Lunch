@@ -1,69 +1,69 @@
 package com.gz.jey.go4lunch.activities
 
  import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
- import android.graphics.drawable.Drawable
+ import android.app.Activity
+ import android.app.AlarmManager
+ import android.app.PendingIntent
+ import android.content.Context
+ import android.content.Intent
+ import android.content.pm.PackageManager
  import android.net.Uri
-import android.os.Bundle
-import android.support.design.widget.BottomNavigationView
-import android.support.design.widget.NavigationView
+ import android.os.Bundle
+ import android.support.design.widget.BottomNavigationView
+ import android.support.design.widget.NavigationView
  import android.support.design.widget.TextInputEditText
  import android.support.v4.app.ActivityCompat
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
-import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.ActionBar
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
- import android.support.v7.view.menu.MenuBuilder
+ import android.support.v4.app.Fragment
+ import android.support.v4.content.ContextCompat
+ import android.support.v4.view.GravityCompat
+ import android.support.v4.widget.DrawerLayout
+ import android.support.v7.app.ActionBar
+ import android.support.v7.app.ActionBarDrawerToggle
+ import android.support.v7.app.AppCompatActivity
  import android.support.v7.widget.Toolbar
  import android.text.Editable
  import android.text.TextUtils
  import android.text.TextWatcher
  import android.util.Log
-import android.util.TypedValue
-import android.view.Menu
-import android.view.MenuItem
+ import android.util.TypedValue
+ import android.view.Menu
+ import android.view.MenuItem
  import android.view.MotionEvent
  import android.view.View
- import android.view.View.*
+ import android.view.View.GONE
+ import android.view.View.VISIBLE
  import android.view.inputmethod.InputMethodManager
-import android.widget.*
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.ErrorCodes
-import com.firebase.ui.auth.IdpResponse
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.places.*
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.gz.jey.go4lunch.R
-import com.gz.jey.go4lunch.adapters.PlacesAdapter
-import com.gz.jey.go4lunch.api.UserHelper
-import com.gz.jey.go4lunch.fragments.*
-import com.gz.jey.go4lunch.models.Contact
- import com.gz.jey.go4lunch.models.Details
+ import android.widget.*
+ import com.bumptech.glide.Glide
+ import com.bumptech.glide.request.RequestOptions
+ import com.firebase.ui.auth.AuthUI
+ import com.firebase.ui.auth.ErrorCodes
+ import com.firebase.ui.auth.IdpResponse
+ import com.google.android.gms.location.FusedLocationProviderClient
+ import com.google.android.gms.location.LocationServices
+ import com.google.android.gms.location.places.*
+ import com.google.android.gms.maps.model.LatLng
+ import com.google.android.gms.maps.model.LatLngBounds
+ import com.google.android.gms.tasks.OnFailureListener
+ import com.google.android.gms.tasks.OnSuccessListener
+ import com.google.firebase.auth.FirebaseAuth
+ import com.google.firebase.auth.FirebaseUser
+ import com.google.firebase.firestore.DocumentSnapshot
+ import com.google.firebase.firestore.FirebaseFirestore
+ import com.google.firebase.firestore.FirebaseFirestoreSettings
+ import com.gz.jey.go4lunch.R
+ import com.gz.jey.go4lunch.adapters.PlacesAdapter
+ import com.gz.jey.go4lunch.api.UserHelper
+ import com.gz.jey.go4lunch.fragments.*
+ import com.gz.jey.go4lunch.models.*
  import com.gz.jey.go4lunch.models.Place
-import com.gz.jey.go4lunch.models.User
-import com.gz.jey.go4lunch.utils.ApiStreams
-import com.gz.jey.go4lunch.utils.CheckIfTest
+ import com.gz.jey.go4lunch.utils.ApiStreams
+ import com.gz.jey.go4lunch.utils.CheckIfTest
  import com.gz.jey.go4lunch.utils.SetImageColor
  import io.reactivex.disposables.Disposable
-import io.reactivex.observers.DisposableObserver
-import java.util.*
+ import io.reactivex.observers.DisposableObserver
+ import java.text.SimpleDateFormat
+ import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
 
@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var number : String? = null
     var lang = 1
     private var hiddenItems = false
-    var input : String? = null
+    var fromNotif : Boolean = false
 
     // FOR RESTAURANT SELECTOR
     var restaurantID: String? = null
@@ -130,6 +130,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_main)
+        loadDatas()
         loading = findViewById(R.id.loading)
         setLoading(true, true)
         //loading!!.visibility = VISIBLE
@@ -140,12 +141,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         .build()
         firestore.firestoreSettings = settings
 
-        if (savedInstanceState == null)
+        Log.d("ENABLE NOTIF ???", Data.enableNotif.toString())
+
+        if(Data.enableNotif)
+            setNotification()
+        else
+            cancelNotification()
+
+        if (savedInstanceState == null) {
+            val extras = intent.extras
+            if (extras != null){
+                fromNotif = extras.getBoolean("NotiClick")
+                restaurantID = extras.getString("RestaurantId")
+                restaurantName = extras.getString("RestaurantName")
+            }
             initActivity()
+        }
     }
 
     private fun initActivity(){
-        Log.d("START INIT", "ACTIVITY")
+        SaveDatas()
         if(!CheckIfTest.isRunningTest("NavDrawerTest"))
             when(isCurrentUserLogged()){
                 true -> {
@@ -427,7 +442,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         item.isChecked = true
         when (item.itemId) {
             R.id.restaurant_menu -> {
-                if(!user!!.whereEatID.isEmpty()){
+                if(user!!.whereEatID.isNotEmpty()){
                     restaurantID = user!!.whereEatID
                     restaurantName = user!!.whereEatName
                     setFragment(4)
@@ -458,62 +473,99 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     private fun setFragment(index: Int){
         hideKeyboard()
-
-        var fragment : Fragment? = null
-        invalidateOptionsMenu()
-        when(index){
-            0->{
-                this.signInFragment = SignInFragment.newInstance(this)
-                fragment=this.signInFragment
-            }
-            1->{tab=index
-                this.mapViewFragment = MapViewFragment.newInstance(this)
-                fragment = this.mapViewFragment
-            }
-            2->{tab=index
-                this.restaurantsFragment = RestaurantsFragment.newInstance(this)
-                fragment = this.restaurantsFragment
-            }
-            3->{
-                tab=index
-                this.workmatesFragment = WorkmatesFragment.newInstance(this)
-                fragment = this.workmatesFragment
-            }
-            4->{
-                Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
-                supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-                hiddenItems = true
-                toolbar!!.setNavigationOnClickListener {
-                    when(tab){
-                        1-> execRequest(GPS)
-                        2-> execRequest(RESTAURANTS)
-                        3-> execRequest(CONTACTS)
-                        else -> setFragment(tab)
-                    }
+        if (fromNotif) {
+            fromNotif=false
+            execRequest(DETAILS)
+        }else {
+            var fragment: Fragment? = null
+            invalidateOptionsMenu()
+            when (index) {
+                0 -> {
+                    this.signInFragment = SignInFragment.newInstance(this)
+                    fragment = this.signInFragment
                 }
-                this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
-                bottom!!.visibility = GONE
-                setFrameLayoutMargin(false)
-                fragment = this.detailsFragment
+                1 -> {
+                    tab = index
+                    this.mapViewFragment = MapViewFragment.newInstance(this)
+                    fragment = this.mapViewFragment
+                }
+                2 -> {
+                    tab = index
+                    this.restaurantsFragment = RestaurantsFragment.newInstance(this)
+                    fragment = this.restaurantsFragment
+                }
+                3 -> {
+                    tab = index
+                    this.workmatesFragment = WorkmatesFragment.newInstance(this)
+                    fragment = this.workmatesFragment
+                }
+                4 -> {
+                    Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
+                    supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+                    hiddenItems = true
+                    toolbar!!.setNavigationOnClickListener {
+                        when (tab) {
+                            1 -> execRequest(GPS)
+                            2 -> execRequest(RESTAURANTS)
+                            3 -> execRequest(CONTACTS)
+                            else -> setFragment(tab)
+                        }
+                    }
+                    this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
+                    bottom!!.visibility = GONE
+                    setFrameLayoutMargin(false)
+                    fragment = this.detailsFragment
+                }
             }
-        }
 
-        if(index!=0 && index!=4){
-            this.configureSearchBar(tab)
-            Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
-            setDrawerLayout()
-            hiddenItems = false
-            bottom!!.visibility = VISIBLE
-            setFrameLayoutMargin(true)
-        }
+            if (index != 0 && index != 4) {
+                this.configureSearchBar(tab)
+                Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
+                setDrawerLayout()
+                hiddenItems = false
+                bottom!!.visibility = VISIBLE
+                setFrameLayoutMargin(true)
+            }
 
-        this.supportFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainer, fragment)
-            .commit()
+            this.supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .commit()
+        }
     }
 
     fun popupMsg(msg : String){
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * the calling notifcation with alarmManager (once per day)
+     */
+    private fun setNotification() {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, 22)
+        cal.set(Calendar.MINUTE, 24)
+        cal.set(Calendar.SECOND, 0)
+
+        val intent = Intent(applicationContext, NotificationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(applicationContext,
+                987, intent, PendingIntent.FLAG_ONE_SHOT)
+
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pendingIntent)
+        Log.d("NOTIF TIME", cal.time.toString())
+    }
+
+    /**
+     * to disable notification
+     */
+    private fun cancelNotification() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val myIntent = Intent(applicationContext, NotificationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+                applicationContext, 987, myIntent, 0)
+
+        assert(true)
+        alarmManager.cancel(pendingIntent)
     }
 
 
@@ -539,7 +591,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             UserHelper.getUser(uid).addOnSuccessListener {
                 if(it["uid"].toString()==uid)
-                    loadData(it)
+                    loadUserData(it)
                 else
                     createUserInFirestore()
             }
@@ -547,7 +599,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun loadData(data : DocumentSnapshot){
+    private fun loadUserData(data : DocumentSnapshot){
         user=User(
                 data["uid"] as String,
                 data["username"] as String,
@@ -555,6 +607,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 data["urlPicture"] as String,
                 data["whereEatID"] as String,
                 data["whereEatName"] as String,
+                data["whereEatDate"] as String,
                 data["restLiked"] as ArrayList<String> )
 
         contacts = ArrayList()
@@ -568,6 +621,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val urlPicture = contact.get("urlPicture").toString()
                     val whereEatID= contact.get("whereEatID").toString()
                     val whereEatName= contact.get("whereEatName").toString()
+                    val whereEatDate= if(contact.get("whereEatDate").toString().isEmpty()) "0000-00-00 00:00:00" else contact.get("whereEatDate").toString()
                     val restLiked= contact.get("restLiked") as ArrayList<String>
 
 
@@ -606,7 +660,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }*/
 
 
-                    val cntc = Contact(uid, username, urlPicture, whereEatID, whereEatName, restLiked)
+                    val cntc = Contact(uid, username, urlPicture, whereEatID, whereEatName, whereEatDate, restLiked)
 
                     //UserHelper.updateContact(uid, cntc)
                     contacts.add(cntc)
@@ -628,8 +682,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val username = getCurrentUser()!!.displayName
             val uid = getCurrentUser()!!.uid
             val whereEat = ""
+            val whereDate = ""
             val restLiked : ArrayList<String> = ArrayList()
-            UserHelper.createUser(uid, username!!, mail!!, urlPicture, whereEat, whereEat, restLiked).addOnFailureListener(this.onFailureListener())
+            UserHelper.createUser(uid, username!!, mail!!, urlPicture, whereEat, whereEat, whereDate, restLiked).addOnFailureListener(this.onFailureListener())
             checkUserInFirestore()
         }
     }
@@ -730,6 +785,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun setAllContacts(){
+
         if(place!=null){
             for(r in place!!.results){
                 if(user!!.restLiked.contains(r.placeId))
@@ -739,12 +795,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if(c.restLiked.contains(r.placeId))
                         r.liked++
                 }
-
-                Log.d(r.placeId +" LIKED", r.liked.toString())
             }
 
+            val today : Calendar = Calendar.getInstance()
+            today.set(Calendar.HOUR_OF_DAY, 0)
+            today.set(Calendar.MINUTE, 0)
+            today.set(Calendar.SECOND, 0)
+            today.set(Calendar.MILLISECOND, 0)
+
+            val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.FRANCE)
+
             for(c in contacts){
-                if(!c.whereEatID.isEmpty()){
+                val now : Calendar = Calendar.getInstance()
+                now.time = df.parse(c.whereEatDate)
+
+                val nows = df.format(now.time)
+                val todays = df.format(today.time)
+                val espace = "  ||  "
+
+                if(c.whereEatID.isNotEmpty() && now.after(today)){
+                    Log.d(c.username, "$nows $espace $todays")
                     for(r in place!!.results){
                         if(r.placeId==c.whereEatID) {
                             if (!r.workmates.contains(c)) {
@@ -753,10 +823,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             }
                         }
                     }
+                }else{
+                    c.whereEatDate = nows
+                    c.whereEatID = ""
+                    c.whereEatName = ""
+                    //UserHelper.updateContact(c.uid, c)
                 }
             }
-
-            setFragment(tab)
+                setFragment(tab)
         }else{
             execRequest(RESTAURANTS)
         }
@@ -766,13 +840,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         this.details = det
         val fType = details!!.result.types
 
-        for(r in fType){
-            Log.d("TYPE" , r.toString())
-        }
         if(fType.contains("meal_takeaway") || fType.contains("restaurant")) {
             setFragment(4)
         }else {
-            popupMsg("This is NOT a restaurant")
+            popupMsg("This is NOT a restaurant !")
         }
     }
 
@@ -915,6 +986,27 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         else
             loading!!.visibility = GONE
+    }
+
+    /**
+     * load all the saved datas from Preferences
+     */
+    fun loadDatas() {
+        Data.lang = getPreferences(Context.MODE_PRIVATE).getInt("LANG", 0)
+        Data.tab = getPreferences(Context.MODE_PRIVATE).getInt("TAB", 1)
+        Data.enableNotif = getPreferences(Context.MODE_PRIVATE).getBoolean("NOTIF", true)
+    }
+
+    /**
+     * Save all the datas into Preferences
+     */
+    fun SaveDatas() {
+        val preferences = getPreferences(Context.MODE_PRIVATE)
+        val editor = preferences.edit()
+        editor.putInt("LANG", Data.lang)
+        editor.putInt("TAB", Data.tab)
+        editor.putBoolean("NOTIF", Data.enableNotif)
+        editor.apply()
     }
 
     private fun hideKeyboard() {

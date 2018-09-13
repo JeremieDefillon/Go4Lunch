@@ -27,8 +27,8 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
     private val TAG = "MAP FRAGMENT"
     var mainActivity: MainActivity? = null
-    var mSupportMapFragment: SupportMapFragment? = null
-    var mMap: GoogleMap? = null
+    private var mSupportMapFragment: SupportMapFragment? = null
+    private var mMap: GoogleMap? = null
     var mView: View? = null
 
     private val DEFAULT_ZOOM = 14f
@@ -65,18 +65,38 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
         rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM,RelativeLayout.TRUE)
         rlp.setMargins(0,0,50,50)
 
-        updateLocationUI()
-    }
-
-    private fun updateLocationUI() {
-        if (mMap == null) {
-            return
-        }
         try {
             if (mainActivity!!.mLocationPermissionGranted) {
                 mMap!!.isMyLocationEnabled = true
                 mMap!!.uiSettings.isMyLocationButtonEnabled = true
-                setCurrentPlace()
+                mainActivity!!.setLoading(false, false)
+                mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        LatLng(mainActivity!!.mLastKnownLocation!!.latitude, mainActivity!!.mLastKnownLocation!!.longitude), DEFAULT_ZOOM))
+
+                var ico : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.self_marker)
+                ico = SetImageColor.changeBitmapColor(ico, Color.RED)
+
+                mMap!!.addMarker(MarkerOptions()
+                        .position(mainActivity!!.mLastKnownLocation!!)
+                        .title("Position")
+                        .icon(BitmapDescriptorFactory.fromBitmap(ico)))
+
+                val restaurants = ArrayList<Result>()
+                restaurants.clear()
+                restaurants.addAll(mainActivity!!.place!!.results)
+
+                val iconIn : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.someone_in)
+                val iconNone : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.none_in)
+
+                for (rest : Result in restaurants){
+                    val ico = if(rest.workmates !=null && rest.workmates.isNotEmpty())iconIn else iconNone
+
+                    val location = LatLng(rest.geometry.location.lat, rest.geometry.location.lng)
+                    mMap!!.addMarker(MarkerOptions()
+                            .position(location)
+                            .title(rest.name)
+                            .icon(BitmapDescriptorFactory.fromBitmap(ico)))
+                }
             } else {
                 mMap!!.isMyLocationEnabled = false
                 mMap!!.uiSettings.isMyLocationButtonEnabled = false
@@ -85,49 +105,6 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
             }
         } catch (e: SecurityException) {
             Log.e("Exception: %s", e.message)
-        }
-    }
-
-
-    private fun setCurrentPlace() {
-        Log.d(TAG, " CURRENT PLACE")
-        if (mMap == null)
-            return
-
-        if (mainActivity!!.mLocationPermissionGranted) {
-            mainActivity!!.setLoading(false, false)
-            mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    LatLng(mainActivity!!.mLastKnownLocation!!.latitude, mainActivity!!.mLastKnownLocation!!.longitude), DEFAULT_ZOOM))
-
-            var ico : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.self_marker)
-            ico = SetImageColor.changeBitmapColor(ico, Color.RED)
-
-            mMap!!.addMarker(MarkerOptions()
-                    .position(mainActivity!!.mLastKnownLocation!!)
-                    .title("Position")
-                    .icon(BitmapDescriptorFactory.fromBitmap(ico)))
-
-            val restaurants = ArrayList<Result>()
-            restaurants.clear()
-            restaurants.addAll(mainActivity!!.place!!.results)
-
-            val iconIn : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.someone_in)
-            val iconNone : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.none_in)
-
-            for (rest : Result in restaurants){
-                val ico = if(rest.workmates !=null && rest.workmates.isNotEmpty())iconIn else iconNone
-
-                val location = LatLng(rest.geometry.location.lat, rest.geometry.location.lng)
-                mMap!!.addMarker(MarkerOptions()
-                        .position(location)
-                        .title(rest.name)
-                        .icon(BitmapDescriptorFactory.fromBitmap(ico)))
-            }
-        } else {
-            // The user has not granted permission.
-            Log.e(TAG, "The user did not grant location permission.")
-            // Prompt the user for permission.
-            mainActivity!!.getLocationPermission()
         }
     }
 
