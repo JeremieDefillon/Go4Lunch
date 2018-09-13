@@ -91,8 +91,7 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
 
         this.openTime!!.text = oc
         setTime(context, open)
-        val dist = SphericalUtil.computeDistanceBetween(startLatLng, LatLng(res.geometry.location.lat, res.geometry.location.lng))
-        this.distance!!.text = getDistance(dist)
+        this.distance!!.text = getDistance(res.distance)
         val amount = res.workmates.size
         val amString = "($amount)"
         this.workmatesAmount!!.text = amString

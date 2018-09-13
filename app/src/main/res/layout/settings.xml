@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="30dip"
+        android:layout_margin="20dip"
+        android:text="@string/notification_label"
+        android:background="@color/colorPrimary"
+        android:textStyle="bold"
+        android:textColor="@color/colorBlack"
+        android:textSize="18sp"/>
+
+    <Switch
+        android:id="@+id/switch_enable_notification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dip"
+        android:text="@string/enable_notification"
+        android:textSize="15sp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="30dip"
+        android:layout_margin="20dip"
+        android:text="@string/filter_list_label"
+        android:background="@color/colorPrimary"
+        android:textStyle="bold"
+        android:textColor="@color/colorBlack"
+        android:textSize="18sp"/>
+
+
+        <RadioGroup
+            android:id="@+id/filter_choice"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="50dip"
+            android:layout_marginEnd="50dip">
+
+            <RadioButton
+                android:id="@+id/filter_0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/by_default"
+                android:textSize="17sp"/>
+
+            <RadioButton
+                android:id="@+id/filter_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/by_distance_less"
+                android:textSize="17sp"/>
+
+            <RadioButton
+                android:id="@+id/filter_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/by_like_more"
+                android:textSize="17sp"/>
+
+            <RadioButton
+                android:id="@+id/filter_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/by_google_rating_more"
+                android:textSize="17sp"/>
+
+            <RadioButton
+                android:id="@+id/filter_4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/by_distance_more"
+                android:textSize="17sp"/>
+
+            <RadioButton
+                android:id="@+id/filter_5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/by_like_less"
+                android:textSize="17sp"/>
+
+            <RadioButton
+                android:id="@+id/filter_6"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/by_google_rating_less"
+                android:textSize="17sp"/>
+
+        </RadioGroup>
+
+</LinearLayout>

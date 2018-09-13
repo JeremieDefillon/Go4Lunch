@@ -58,6 +58,7 @@
 
     <!-- APP DICTIONNARY -->
     <string name="go_eat">will eat at</string>
+    <string name="will_eat">you will eat at</string>
     <string name="doesnt_chosen">hasn\'t chosen where to eat</string>
     <string name="is_joining">is joining !</string>
     <string name="none_joining">There is none workmates coming yet !</string>
@@ -65,5 +66,18 @@
     <string name="none_workmate">Any workmate found !</string>
     <string name="open">Open</string>
     <string name="close">Closed</string>
+
+    <!-- SETTINGS DICTIONNARY -->
+
+    <string name="notification_label">Notification :</string>
+    <string name="enable_notification">Enable Notification (Once per day at 12:00)</string>
+    <string name="filter_list_label">Restaurants\'s list filters :</string>
+    <string name="by_default">By default</string>
+    <string name="by_distance_less">By distance (- to +)</string>
+    <string name="by_distance_more">By distance (+ to -)</string>
+    <string name="by_google_rating_less">By google\'s rating (- to +)</string>
+    <string name="by_google_rating_more">By google\'s rating (+ to -)</string>
+    <string name="by_like_less">By like\'s rating (- to +)</string>
+    <string name="by_like_more">By like\'s rating (+ to -)</string>
 
 </resources>

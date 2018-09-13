@@ -41,6 +41,7 @@ public class Result {
     @SerializedName("reference")
     @Expose
     private String reference;
+    private Double distance;
     @SerializedName("types")
     @Expose
     private List<String> types = null;
@@ -134,6 +135,14 @@ public class Result {
 
     public void setReference(String reference) {
         this.reference = reference;
+    }
+
+    public Double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(Double distance) {
+        this.distance = distance;
     }
 
     public List<String> getTypes() {

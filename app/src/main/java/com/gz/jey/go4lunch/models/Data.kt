@@ -6,4 +6,7 @@ object Data {
     var tab: Int = 1
     var enableNotif: Boolean = true
     var filter : Int = 0
+
+    var notifHour : Int = 12
+    var notifMinute : Int = 0
 }

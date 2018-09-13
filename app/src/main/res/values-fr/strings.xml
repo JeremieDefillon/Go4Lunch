@@ -65,5 +65,17 @@
     <string name="open">Ouvert</string>
     <string name="close">Fermé</string>
 
+    <!-- SETTINGS DICTIONNARY -->
+    <string name="notification_label">Notification :</string>
+    <string name="enable_notification">Activer Notification (1 fois /jour à 12:00)</string>
+    <string name="filter_list_label">Filtres liste restaurants :</string>
+    <string name="by_default">Par défaut</string>
+    <string name="by_distance_less">Par distance (- à +)</string>
+    <string name="by_distance_more">Par distance (+ à -)</string>
+    <string name="by_google_rating_less">Par note google (- à +)</string>
+    <string name="by_google_rating_more">Par note google (+ à -)</string>
+    <string name="by_like_less">Par like (- à +)</string>
+    <string name="by_like_more">Par like (+ à -)</string>
+
 
 </resources>

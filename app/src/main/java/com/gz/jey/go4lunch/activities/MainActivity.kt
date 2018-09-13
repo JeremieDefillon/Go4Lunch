@@ -51,6 +51,7 @@ package com.gz.jey.go4lunch.activities
  import com.google.firebase.firestore.DocumentSnapshot
  import com.google.firebase.firestore.FirebaseFirestore
  import com.google.firebase.firestore.FirebaseFirestoreSettings
+ import com.google.maps.android.SphericalUtil
  import com.gz.jey.go4lunch.R
  import com.gz.jey.go4lunch.adapters.PlacesAdapter
  import com.gz.jey.go4lunch.api.UserHelper
@@ -64,6 +65,7 @@ package com.gz.jey.go4lunch.activities
  import io.reactivex.observers.DisposableObserver
  import java.text.SimpleDateFormat
  import java.util.*
+ import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
 
@@ -75,6 +77,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var restaurantsFragment: RestaurantsFragment? = null
     private var workmatesFragment: WorkmatesFragment? = null
     private var detailsFragment: RestaurantDetailsFragment? = null
+    private var settingsFragment: SettingsFragment? = null
     lateinit var placesAdapter: PlacesAdapter
 
     // FOR PERMISSIONS
@@ -86,7 +89,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // TASK CODE
     private val SIGN_OUT_TASK = 99
     val GPS = 10
-    private val RESTAURANTS = 34
+    val RESTAURANTS = 34
     val CONTACTS = 37
     val DETAILS = 44
 
@@ -113,13 +116,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     var contacts : ArrayList<Contact> = ArrayList()
     var place : Place? = null
     var details : Details? = null
-    private var tab = 0
+    var lastTab = 1
     private var username : String?= null
     var email : String?= null
     private var number : String? = null
     var lang = 1
     private var hiddenItems = false
     var fromNotif : Boolean = false
+    var changedFilter : Boolean = false
 
     // FOR RESTAURANT SELECTOR
     var restaurantID: String? = null
@@ -160,7 +164,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun initActivity(){
-        SaveDatas()
+        saveDatas()
         if(!CheckIfTest.isRunningTest("NavDrawerTest"))
             when(isCurrentUserLogged()){
                 true -> {
@@ -170,10 +174,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     this.configureBottomBar()
                     this.setDrawerLayout()
                     this.setNavigationView()
-                    tab = if(intent.extras.containsKey("Index"))
+                    Data.tab = if(intent.extras.containsKey("Index"))
                         intent.extras.getInt("Index")
                     else
                         1
+                    saveDatas()
                     execRequest(GPS)
                 }
                 false -> setFragment(0)
@@ -375,17 +380,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             setLoading(false, true)
             when (item.itemId) {
                 R.id.map_button -> {
-                    tab = 1
+                    Data.tab = 1
                     execRequest(GPS)}
                 R.id.restaurants_button -> {
-                    tab = 2
+                    Data.tab = 2
                     execRequest(RESTAURANTS)
                 }
                 R.id.workmates_button -> {
-                    tab = 3
+                    Data.tab = 3
                     execRequest(CONTACTS)
                 }
             }
+            saveDatas()
             true
         }
     }
@@ -445,27 +451,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if(user!!.whereEatID.isNotEmpty()){
                     restaurantID = user!!.whereEatID
                     restaurantName = user!!.whereEatName
-                    setFragment(4)
+                    execRequest(DETAILS)
                 }else{
                     popupMsg(getString(R.string.none_restaurant))
                 }
             }
-            R.id.settings -> setSettings()
+            R.id.settings -> setFragment(5)
             R.id.power_settings -> disconnect()
         }
         this.drawerLayout!!.closeDrawer(GravityCompat.START)
         return true
     }
 
-
-    /**
-     * Set Settings
-     */
-    private fun setSettings(){
-        invalidateOptionsMenu()
-        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-    }
 
     /**
      * @param index Int
@@ -479,23 +476,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }else {
             var fragment: Fragment? = null
             invalidateOptionsMenu()
+            Data.tab = index
             when (index) {
                 0 -> {
                     this.signInFragment = SignInFragment.newInstance(this)
                     fragment = this.signInFragment
                 }
                 1 -> {
-                    tab = index
+                    lastTab = index
                     this.mapViewFragment = MapViewFragment.newInstance(this)
                     fragment = this.mapViewFragment
                 }
                 2 -> {
-                    tab = index
+                    lastTab = index
                     this.restaurantsFragment = RestaurantsFragment.newInstance(this)
                     fragment = this.restaurantsFragment
                 }
                 3 -> {
-                    tab = index
+                    lastTab = index
                     this.workmatesFragment = WorkmatesFragment.newInstance(this)
                     fragment = this.workmatesFragment
                 }
@@ -504,11 +502,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     supportActionBar!!.setDisplayHomeAsUpEnabled(true)
                     hiddenItems = true
                     toolbar!!.setNavigationOnClickListener {
-                        when (tab) {
+                        when (lastTab) {
                             1 -> execRequest(GPS)
                             2 -> execRequest(RESTAURANTS)
                             3 -> execRequest(CONTACTS)
-                            else -> setFragment(tab)
+                            else -> setFragment(lastTab)
                         }
                     }
                     this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
@@ -516,10 +514,27 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     setFrameLayoutMargin(false)
                     fragment = this.detailsFragment
                 }
+                5 -> {
+                    Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
+                    supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+                    hiddenItems = true
+                    toolbar!!.setNavigationOnClickListener {
+                        when (lastTab) {
+                            1 -> execRequest(GPS)
+                            2 -> execRequest(RESTAURANTS)
+                            3 -> execRequest(CONTACTS)
+                            else -> setFragment(lastTab)
+                        }
+                    }
+                    this.settingsFragment = SettingsFragment.newInstance(this)
+                    bottom!!.visibility = GONE
+                    setFrameLayoutMargin(false)
+                    fragment = this.settingsFragment
+                }
             }
 
-            if (index != 0 && index != 4) {
-                this.configureSearchBar(tab)
+            if (index != 0 && index != 4 && index !=5) {
+                this.configureSearchBar(lastTab)
                 Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.menu)
                 setDrawerLayout()
                 hiddenItems = false
@@ -540,10 +555,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     /**
      * the calling notifcation with alarmManager (once per day)
      */
-    private fun setNotification() {
+    fun setNotification() {
         val cal = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, 22)
-        cal.set(Calendar.MINUTE, 24)
+        cal.set(Calendar.HOUR_OF_DAY, Data.notifHour)
+        cal.set(Calendar.MINUTE, Data.notifMinute)
         cal.set(Calendar.SECOND, 0)
 
         val intent = Intent(applicationContext, NotificationReceiver::class.java)
@@ -558,7 +573,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     /**
      * to disable notification
      */
-    private fun cancelNotification() {
+    fun cancelNotification() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val myIntent = Intent(applicationContext, NotificationReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
@@ -775,8 +790,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    fun setAllRestaurants(place : Place){
-        this.place = place
+    fun setAllRestaurants(p : Place){
+        place = p
+        for (r in place!!.results)
+            r.distance = SphericalUtil.computeDistanceBetween(mLastKnownLocation, LatLng(r.geometry.location.lat, r.geometry.location.lng))
 
         if(contacts.size!=0)
             setAllContacts()
@@ -795,6 +812,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if(c.restLiked.contains(r.placeId))
                         r.liked++
                 }
+            }
+
+            val sortedRestaurant = when(Data.filter){
+                0 -> place!!.results
+                1 -> place!!.results.sortedWith(compareBy<Result> { it.distance })
+                2 -> place!!.results.sortedWith(compareByDescending<Result> { it.liked })
+                3 -> place!!.results.sortedWith(compareByDescending<Result> { it.rating })
+                4 -> place!!.results.sortedWith(compareByDescending<Result> { it.distance })
+                5 -> place!!.results.sortedWith(compareBy<Result> { it.liked })
+                6 -> place!!.results.sortedWith(compareBy<Result> { it.rating })
+                else -> place!!.results
+            }
+
+            place!!.results.clear()
+            place!!.results.addAll(sortedRestaurant)
+
+            for ((index, r) in place!!.results.withIndex()){
+                Log.d(index.toString(), r.distance.toString() + " " + r.liked.toString() + " " + r.rating.toString())
             }
 
             val today : Calendar = Calendar.getInstance()
@@ -827,10 +862,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     c.whereEatDate = nows
                     c.whereEatID = ""
                     c.whereEatName = ""
+                    // UNCOMMENT UNDER IF WANNA SETUP FIRESTORE BUT UPDATE AUTORIZATION WITH
                     //UserHelper.updateContact(c.uid, c)
                 }
             }
-                setFragment(tab)
+            if(changedFilter){
+                changedFilter = false
+                setFragment(lastTab)
+            }else
+                setFragment(Data.tab)
         }else{
             execRequest(RESTAURANTS)
         }
@@ -841,6 +881,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val fType = details!!.result.types
 
         if(fType.contains("meal_takeaway") || fType.contains("restaurant")) {
+            Data.tab = 4
+            saveDatas()
             setFragment(4)
         }else {
             popupMsg("This is NOT a restaurant !")
@@ -991,20 +1033,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     /**
      * load all the saved datas from Preferences
      */
-    fun loadDatas() {
+    private fun loadDatas() {
         Data.lang = getPreferences(Context.MODE_PRIVATE).getInt("LANG", 0)
         Data.tab = getPreferences(Context.MODE_PRIVATE).getInt("TAB", 1)
+        Data.filter = getPreferences(Context.MODE_PRIVATE).getInt("FILTER", 0)
         Data.enableNotif = getPreferences(Context.MODE_PRIVATE).getBoolean("NOTIF", true)
     }
 
     /**
      * Save all the datas into Preferences
      */
-    fun SaveDatas() {
+    fun saveDatas() {
         val preferences = getPreferences(Context.MODE_PRIVATE)
         val editor = preferences.edit()
         editor.putInt("LANG", Data.lang)
         editor.putInt("TAB", Data.tab)
+        editor.putInt("FILTER", Data.filter)
         editor.putBoolean("NOTIF", Data.enableNotif)
         editor.apply()
     }
