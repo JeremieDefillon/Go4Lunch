@@ -27,7 +27,6 @@ import com.gz.jey.go4lunch.views.DetailsAdapter
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
     private var mView : View? = null

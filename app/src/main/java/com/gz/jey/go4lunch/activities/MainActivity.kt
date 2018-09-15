@@ -94,8 +94,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     val DETAILS = 44
 
     // FOR POSITION
-    var mGeoDataClient : GeoDataClient? = null
-    var mPlaceDetectionClient: PlaceDetectionClient? = null
+    private var mGeoDataClient : GeoDataClient? = null
+    private var mPlaceDetectionClient: PlaceDetectionClient? = null
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
 
     var mLastKnownLocation: LatLng? = null
@@ -147,10 +147,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         Log.d("ENABLE NOTIF ???", Data.enableNotif.toString())
 
-        if(Data.enableNotif)
-            setNotification()
-        else
-            cancelNotification()
+
 
         if (savedInstanceState == null) {
             val extras = intent.extras
@@ -159,6 +156,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 restaurantID = extras.getString("RestaurantId")
                 restaurantName = extras.getString("RestaurantName")
             }
+
+            if(Data.enableNotif)
+                setNotification()
+            else
+                cancelNotification()
+
             initActivity()
         }
     }
@@ -828,9 +831,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             place!!.results.clear()
             place!!.results.addAll(sortedRestaurant)
 
-            for ((index, r) in place!!.results.withIndex()){
-                Log.d(index.toString(), r.distance.toString() + " " + r.liked.toString() + " " + r.rating.toString())
-            }
+            //for ((index, r) in place!!.results.withIndex())
+            //    Log.d(index.toString(), r.distance.toString() + " " + r.liked.toString() + " " + r.rating.toString())
+
 
             val today : Calendar = Calendar.getInstance()
             today.set(Calendar.HOUR_OF_DAY, 0)

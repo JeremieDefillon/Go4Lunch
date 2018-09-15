@@ -52,7 +52,7 @@ class NotificationReceiver : BroadcastReceiver() {
             Log.d("UID", uid)
 
             UserHelper.getUser(uid).addOnSuccessListener {
-                if(it["uid"].toString()==uid)
+                if(it["uid"].toString()==uid && it["whereEatID"].toString().isNotEmpty())
                     loadData(it, context)
             }
         }

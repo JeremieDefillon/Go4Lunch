@@ -92,6 +92,7 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
                                         if(fType.contains("meal_takeaway") || fType.contains("restaurant")) {
                                             Log.d("TYPE" , fType.toString())
                                             resultList.add(r)
+                                            notifyDataSetChanged()
                                         }
                                     }
 

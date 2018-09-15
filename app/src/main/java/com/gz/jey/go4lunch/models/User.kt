@@ -13,4 +13,5 @@ class User(uid: String, username: String, mail: String, urlPicture: String, wher
     var whereEatName: String = whereEatName
     var whereEatDate: String = whereEatDate
     var restLiked : ArrayList<String> = restLiked
+
 }
