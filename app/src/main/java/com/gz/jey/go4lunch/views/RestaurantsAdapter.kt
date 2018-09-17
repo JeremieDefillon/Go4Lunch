@@ -5,20 +5,20 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.bumptech.glide.RequestManager
-import com.google.android.gms.maps.model.LatLng
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.models.Result
 
 class RestaurantsAdapter
 /**
- * @param results List<Result>
+ * @param key String
+ * @param results ArrayList<Result>
+ * @param total Int
  * @param glide RequestManager
  * @param callback Listener */
 (
         // FOR DATA
         private val key: String,
-        private val startPosition: LatLng,
-        private val results: List<Result>,
+        private val results: ArrayList<Result>,
         private val total: Int,
         private val glide: RequestManager,
         // FOR COMMUNICATION
@@ -47,7 +47,7 @@ class RestaurantsAdapter
      * UPDATE VIEW HOLDER WITH NEWS
      */
     override fun onBindViewHolder(viewHolder: RestaurantsViewHolder, position: Int) {
-        viewHolder.updateRestaurants(this.key, context!!, this.total, this.startPosition, this.results[position], this.callback)
+        viewHolder.updateRestaurants(this.key, context!!, this.total, this.results[position], this.callback)
     }
 
     /**
@@ -57,11 +57,4 @@ class RestaurantsAdapter
         return this.results.size
     }
 
-    /**
-     * @param position int
-     * @return Result
-     */
-    fun getRestaurants(position: Int): Result {
-        return this.results[position]
-    }
 }

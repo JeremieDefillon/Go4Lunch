@@ -33,7 +33,7 @@ class FragmentUnitTest {
      * The setUp
      */
     @Before
-    fun SetUp() {
+    fun setUp() {
         mActivity = mActivityRule.activity
         flContainer = mActivity!!.findViewById(R.id.fragmentContainer)
     }

@@ -121,9 +121,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         contacts = ArrayList()
         // Create newsAdapter passing in the sample user data
         detailsAdapter =
-                DetailsAdapter(getString(R.string.google_api_key),
-                        mainActivity!!.mLastKnownLocation!!,
-                        contacts!!,
+                DetailsAdapter(contacts!!,
                         Glide.with(this),
                         this)
 
@@ -140,22 +138,22 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     private fun setDetails(){
         restaurant = mainActivity!!.details!!.result
 
-        if(mainActivity!!.user!!.restLiked.contains(restaurant!!.placeId))
+        if(mainActivity!!.user!!.restLiked.contains(restaurant!!.place_id))
             restaurant!!.liked ++
 
         for (c in mainActivity!!.contacts!!)
-            if(c.restLiked.contains(restaurant!!.placeId))
+            if(c.restLiked.contains(restaurant!!.place_id))
                 restaurant!!.liked ++
 
-        if(restaurant!!.photos != null) {
-            val imgLink = ApiPhoto.getPhotoURL(500, restaurant!!.photos[0].photoReference, getString(R.string.google_maps_key))
+        if(restaurant!!.photos.isNotEmpty()) {
+            val imgLink = ApiPhoto.getPhotoURL(500, restaurant!!.photos[0].photo_reference!!, getString(R.string.google_maps_key))
             Glide.with(this)
                     .load(imgLink)
                     .into(restaurantImage!!)
         }
 
         restaurantName!!.text = if(restaurant!!.name.length>25) restaurant!!.name.substring(0,22)+" ..." else restaurant!!.name
-        restaurantAddress!!.text = restaurant!!.address
+        restaurantAddress!!.text = restaurant!!.vicinity
 
         val emptyStar = SetImageColor.changeDrawableColor(context!!, R.drawable.star_rate, ContextCompat.getColor(context!!, R.color.colorTransparent))
         val googleStar = SetImageColor.changeDrawableColor(context!!, R.drawable.star_rate, ContextCompat.getColor(context!!, R.color.colorPrimary))
@@ -202,10 +200,10 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         }
 
         callTxt!!.text = getString(R.string.call)
-        var number = restaurant!!.formattedPhoneNumber
+        var number = restaurant!!.formatted_phone_number
         var open : Boolean? = null
-        if(restaurant!!.openingHours != null)
-            open = restaurant!!.openingHours.openNow
+        if(restaurant!!.opening_hours != null)
+            open = restaurant!!.opening_hours.openNow
         if(number!=null && !number.isEmpty() && open!=null && open){
             number = number.replace(" ","")
             call!!.setOnClickListener {
@@ -221,7 +219,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         likeTxt!!.text = getString(R.string.like)
         var liked = false
         for (l in mainActivity!!.user!!.restLiked){
-            if(l==restaurant!!.placeId) {
+            if(l==restaurant!!.place_id) {
                 liked = true
                 break
             }
@@ -257,7 +255,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         val workmate : ArrayList<Contact> = ArrayList()
 
         for (c in mainActivity!!.contacts!!){
-            if(c.whereEatID == restaurant!!.placeId){
+            if(c.whereEatID == restaurant!!.place_id){
                 Log.d("CONTACT" , c.username)
                 workmate.add(c)
             }
@@ -300,7 +298,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         if(liked){
             like!!.setOnClickListener {
                 val nliked = false
-                mainActivity!!.user!!.restLiked.remove(restaurant!!.placeId)
+                mainActivity!!.user!!.restLiked.remove(restaurant!!.place_id)
                 UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
                 setLike(nliked)
             }
@@ -309,7 +307,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         }else{
             like!!.setOnClickListener {
                 val nliked = true
-                mainActivity!!.user!!.restLiked.add(restaurant!!.placeId)
+                mainActivity!!.user!!.restLiked.add(restaurant!!.place_id)
                 UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
                 setLike(nliked)
             }

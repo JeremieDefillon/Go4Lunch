@@ -27,7 +27,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
     var mainActivity: MainActivity? = null
     private var mSupportMapFragment: SupportMapFragment? = null
     private var mMap: GoogleMap? = null
-    var mView: View? = null
+    private var mView: View? = null
 
     private val DEFAULT_ZOOM = 14f
 
@@ -81,15 +81,14 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
                 val restaurants = ArrayList<Result>()
                 restaurants.clear()
-                restaurants.addAll(mainActivity!!.place!!.results)
+                restaurants.addAll(mainActivity!!.places!!)
 
                 val iconIn : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.someone_in)
                 val iconNone : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.none_in)
 
                 for (rest : Result in restaurants){
-                    val ico = if(rest.workmates !=null && rest.workmates.isNotEmpty())iconIn else iconNone
-
-                    val location = LatLng(rest.geometry.location.lat, rest.geometry.location.lng)
+                    ico = if(rest.workmates.isNotEmpty())iconIn else iconNone
+                    val location = LatLng(rest.geometry!!.location!!.lat!!, rest.geometry.location!!.lng!!)
                     mMap!!.addMarker(MarkerOptions()
                             .position(location)
                             .title(rest.name)
@@ -109,10 +108,10 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
     override fun onMarkerClick(p0: Marker?) : Boolean {
         mainActivity!!.setLoading(false, true)
-        for((index,value) in mainActivity!!.place!!.results.withIndex()){
-            if(mainActivity!!.place!!.results[index].name == p0!!.title){
-                mainActivity!!.restaurantID = mainActivity!!.place!!.results[index].placeId
-                mainActivity!!.restaurantName = mainActivity!!.place!!.results[index].name
+        for(r in mainActivity!!.places!!){
+            if(r.name == p0!!.title){
+                mainActivity!!.restaurantID = r.place_id
+                mainActivity!!.restaurantName = r.name
                break
             }
         }

@@ -4,9 +4,8 @@ import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import com.gz.jey.go4lunch.R
 import com.bumptech.glide.RequestManager
-import com.google.android.gms.maps.model.LatLng
+import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.models.Contact
 
 class DetailsAdapter
@@ -15,8 +14,6 @@ class DetailsAdapter
  * @param glide RequestManager
  * @param callback Listener */
 (// FOR DATA
-        private val key: String,
-        private val startPosition: LatLng,
         private val contacts: List<Contact>,
         private val glide: RequestManager,
         // FOR COMMUNICATION
@@ -55,11 +52,4 @@ class DetailsAdapter
         return this.contacts.size
     }
 
-    /**
-     * @param position int
-     * @return Result
-     */
-    fun getWorkmates(position: Int): Contact {
-        return this.contacts[position]
-    }
 }

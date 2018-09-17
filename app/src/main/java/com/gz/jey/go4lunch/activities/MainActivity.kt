@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // FOR DATA
     var user : User? = null
     var contacts : ArrayList<Contact>? = null
-    var place : Place? = null
+    var places : ArrayList<Result>? = null
     var details : Details? = null
     private var lastTab = 2
     private var username : String?= null
@@ -186,7 +186,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     this.configureToolBar()
                     this.configureBottomBar()
                     this.setDrawerLayout()
-                    this.setNavigationView()
 
                     saveDatas()
                 }
@@ -475,21 +474,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         accountPicture = navigationView!!.getHeaderView(0).findViewById(R.id.account_picture)
 
-        this.getCurrentUser()!!.photoUrl
-
         //Get picture URL from Firebase
-        if (this.getCurrentUser()!!.photoUrl != null) {
-            Glide.with(this)
-                    .load(this.getCurrentUser()!!.photoUrl)
-                    .apply(RequestOptions.circleCropTransform())
-                    .into(accountPicture!!)
-        }
+        Glide.with(this)
+            .load(user!!.urlPicture)
+            .apply(RequestOptions.circleCropTransform())
+            .into(accountPicture!!)
+
 
         //Get email & username from Firebase
-        email = if (TextUtils.isEmpty(this.getCurrentUser()!!.email))
-            getString(R.string.no_email_found) else this.getCurrentUser()!!.email
-        username = if (TextUtils.isEmpty(this.getCurrentUser()!!.displayName))
-            getString(R.string.no_username_found) else this.getCurrentUser()!!.displayName
+        email = if (TextUtils.isEmpty(user!!.mail))
+            getString(R.string.no_email_found) else user!!.mail
+        username = if (TextUtils.isEmpty(user!!.username))
+            getString(R.string.no_username_found) else user!!.username
 
         navigationView!!.getHeaderView(0).findViewById<TextView>(R.id.account_name).text = username
         navigationView!!.getHeaderView(0).findViewById<TextView>(R.id.account_mail).text = email
@@ -680,12 +676,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 data["whereEatDate"] as String,
                 data["restLiked"] as ArrayList<String> )
 
+        this.setNavigationView()
+
         contacts = ArrayList()
         contacts!!.clear()
         UserHelper.getUsersCollection().get().addOnSuccessListener {
             for(contact in it.documents){
                 if(contact.get("uid").toString() != getCurrentUser()!!.uid) {
-                    val uid = contact.get("uid").toString()
                     val username = contact.get("username").toString()
                     val urlPicture = contact.get("urlPicture").toString()
                     val whereEatID= contact.get("whereEatID").toString()
@@ -728,7 +725,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             restLiked.add(restarr[rand])
                     }*/
 
-                    val cntc = Contact(uid, username, urlPicture, whereEatID, whereEatName, whereEatDate, restLiked)
+                    val cntc = Contact(username, urlPicture, whereEatID, whereEatName, whereEatDate, restLiked)
 
                     //UserHelper.updateContact(uid, cntc)
                     contacts!!.add(cntc)
@@ -864,10 +861,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     @SuppressLint("SetTextI18n")
     fun setAllRestaurants(p : Place){
         loadingContent!!.text = getString(R.string.checkingRestaurants)
-        place = p
+        places = p.results as ArrayList<Result>
 
-        for ((index, r) in place!!.results.withIndex()) {
-            r.distance = SphericalUtil.computeDistanceBetween(mLastKnownLocation, LatLng(r.geometry.location.lat, r.geometry.location.lng))
+        for ((index, r) in places!!.withIndex()) {
+            r.distance = SphericalUtil.computeDistanceBetween(mLastKnownLocation, LatLng(r.geometry!!.location!!.lat!!, r.geometry.location!!.lng!!))
             loadingContent!!.text = "${getString(R.string.updatingRestaurants)} $index"
         }
         gettingRestaurants=false
@@ -882,29 +879,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     @SuppressLint("SetTextI18n")
     private fun setAllContacts(){
         loadingContent!!.text = getString(R.string.checkingDatas)
-        if(place!=null){
-            for((i,r) in place!!.results.withIndex()){
-                if(user!!.restLiked.contains(r.placeId))
+        if(places!=null){
+            for((i,r) in places!!.withIndex()){
+                if(user!!.restLiked.contains(r.place_id))
                     r.liked++
                 for((y, c )in contacts!!.withIndex()){
                     loadingContent!!.text = "${getString(R.string.updatingDatas)} ${(i + 1) * (y + 1)}"
-                    if(c.restLiked.contains(r.placeId))
+                    if(c.restLiked.contains(r.place_id))
                         r.liked++
                 }
             }
 
             val sortedRestaurant = when(Data.filter){
-                1 -> place!!.results.sortedWith(compareBy<Result> { it.distance })
-                2 -> place!!.results.sortedWith(compareByDescending<Result> { it.liked })
-                3 -> place!!.results.sortedWith(compareByDescending<Result> { it.rating })
-                4 -> place!!.results.sortedWith(compareByDescending<Result> { it.distance })
-                5 -> place!!.results.sortedWith(compareBy<Result> { it.liked })
-                6 -> place!!.results.sortedWith(compareBy<Result> { it.rating })
-                else -> place!!.results.sortedWith(compareBy<Result> { it.distance })
+                1 -> places!!.sortedWith(compareBy { it.distance })
+                2 -> places!!.sortedWith(compareByDescending { it.liked })
+                3 -> places!!.sortedWith(compareByDescending { it.rating })
+                4 -> places!!.sortedWith(compareByDescending { it.distance })
+                5 -> places!!.sortedWith(compareBy { it.liked })
+                6 -> places!!.sortedWith(compareBy { it.rating })
+                else -> places!!.sortedWith(compareBy { it.distance })
             }
 
-            place!!.results.clear()
-            place!!.results.addAll(sortedRestaurant)
+            places!!.clear()
+            places!!.addAll(sortedRestaurant)
+
 
             //for ((index, r) in place!!.results.withIndex())
             //    Log.d(index.toString(), r.distance.toString() + " " + r.liked.toString() + " " + r.rating.toString())
@@ -925,8 +923,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val nowTime = df.format(now.time)
 
                 if(c.whereEatID.isNotEmpty() && now.after(today)){
-                    for(r in place!!.results){
-                        if(r.placeId==c.whereEatID) {
+                    for(r in places!!){
+                        if(r.place_id==c.whereEatID) {
                             if (!r.workmates.contains(c)) {
                                 r.workmates.add(c)
                                 break
@@ -957,6 +955,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun setDetailsObject(det: Details){
         gettingDetails=false
         this.details = det
+
         val fType = details!!.result.types
 
         if(fType.contains("meal_takeaway") || fType.contains("restaurant")) {
@@ -1146,6 +1145,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun loadDatas() {
         Data.lang = getPreferences(Context.MODE_PRIVATE).getInt("LANG", 0)
         Data.tab = getPreferences(Context.MODE_PRIVATE).getInt("TAB", 2)
+        Data.tab = if(Data.tab!=1 && Data.tab !=2 && Data.tab!=3) 2 else Data.tab
         Data.filter = getPreferences(Context.MODE_PRIVATE).getInt("FILTER", 1)
         Data.enableNotif = getPreferences(Context.MODE_PRIVATE).getBoolean("NOTIF", true)
     }

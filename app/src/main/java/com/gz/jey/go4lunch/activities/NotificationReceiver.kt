@@ -93,7 +93,6 @@ class NotificationReceiver : BroadcastReceiver() {
             for(contact in it.documents){
 
                 if(contact.get("uid").toString() != getCurrentUser()!!.uid) {
-                    val uid = contact.get("uid").toString()
                     val username = contact.get("username").toString()
                     val urlPicture = contact.get("urlPicture").toString()
                     val whereEatID= contact.get("whereEatID").toString()
@@ -102,7 +101,7 @@ class NotificationReceiver : BroadcastReceiver() {
                     else contact.get("whereEatDate").toString()
                     val restLiked= contact.get("restLiked") as ArrayList<String>
 
-                    val cntc = Contact(uid, username, urlPicture, whereEatID, whereEatName, whereEatDate, restLiked)
+                    val cntc = Contact(username, urlPicture, whereEatID, whereEatName, whereEatDate, restLiked)
 
                     contacts!!.add(cntc)
                 }
@@ -137,7 +136,7 @@ class NotificationReceiver : BroadcastReceiver() {
             val eatTime : Calendar = Calendar.getInstance()
             eatTime.time = df.parse(c.whereEatDate)
 
-            if(eatTime.after(today) && c.whereEatID == det.result.placeId)
+            if(eatTime.after(today) && c.whereEatID == det.result.place_id)
                 coming.add(c.username)
         }
 
@@ -158,7 +157,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
         val repeatingIntent = Intent(context, MainActivity::class.java)
         repeatingIntent.putExtra("NotiClick", true)
-        repeatingIntent.putExtra("RestaurantId", det.result.placeId)
+        repeatingIntent.putExtra("RestaurantId", det.result.place_id)
         repeatingIntent.putExtra("RestaurantName", det.result.name)
         repeatingIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 

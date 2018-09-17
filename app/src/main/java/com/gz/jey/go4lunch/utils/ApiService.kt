@@ -11,8 +11,6 @@ interface ApiService {
 
     // the request for the google places search api
     //https://maps.googleapis.com/maps/api/place/textsearch/json?type=restaurant&radius=50000&location=46.0056,4.7199&language=fr&key=KEY
-    //private val villars: LatLng = LatLng(45.9953225, 5.029484499999967)
-    //private val privas: LatLng = LatLng(44.735269, 4.599038999999948)
     @GET("maps/api/place/textsearch/json?")
     fun getRestaurants(
         @Query("type") type: String,

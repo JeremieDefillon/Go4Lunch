@@ -1,11 +1,10 @@
 package com.gz.jey.go4lunch.api
 
-import com.gz.jey.go4lunch.models.User
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.gz.jey.go4lunch.models.Contact
+import com.gz.jey.go4lunch.models.User
 import java.util.*
 
 
@@ -32,9 +31,9 @@ object UserHelper {
         return UserHelper.getUsersCollection().document(uid).set(user)
     }
 
-    fun updateContact(uid : String, contact : Contact) : Task<Void> {
+    /*fun updateContact(uid : String, contact : Contact) : Task<Void> {
         return UserHelper.getUsersCollection().document(uid).set(contact)
-    }
+    }*/
 
 
     // --- GET ---

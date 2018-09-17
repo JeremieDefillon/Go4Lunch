@@ -32,15 +32,15 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
     }
 
     /**
-     * @param contact MyContacts
-     * @param glide RequestManager
+     * @param context Context
+     * @param contact Contact
      * @param callback NewsAdapter.Listener
      * UPDATE NEWS ITEM LIST
      */
     fun updateWorkmates(context : Context, contact: Contact, callback: WorkmatesAdapter.Listener) {
 
         val goEat = context.getString(R.string.go_eat).toString()
-        val dontChoosen = context.getString(R.string.doesnt_chosen).toString()
+        val notChosen = context.getString(R.string.doesnt_chosen).toString()
 
         this.name!!.text = contact.username
         this.restaurant!!.text = contact.whereEatName
@@ -51,7 +51,7 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
             this.name!!.setTextColor(getColor(context,R.color.colorBlack))
             this.restaurant!!.setTextColor(getColor(context,R.color.colorAccent))
         } else{
-            this.action!!.text = dontChoosen
+            this.action!!.text = notChosen
             this.action!!.setTextColor(getColor(context,R.color.colorGrey))
             this.name!!.setTextColor(getColor(context,R.color.colorGrey))
             this.restaurant!!.setTextColor(getColor(context,R.color.colorGrey))

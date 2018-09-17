@@ -60,7 +60,6 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         // Create newsAdapter passing in the sample user data
         restaurantsAdapter = RestaurantsAdapter(
                         getString(R.string.google_api_key),
-                        mainActivity!!.mLastKnownLocation!!,
                         results!!,
                         mainActivity!!.contacts!!.size+1,
                         Glide.with(this),
@@ -83,8 +82,8 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         ItemClickSupport.addTo(recyclerView!!, R.layout.restaurant_item)
                 .setOnItemClickListener { _, position, _ ->
                     mainActivity!!.setLoading(false, true)
-                    mainActivity!!.restaurantID = mainActivity!!.place!!.results[position].placeId
-                    mainActivity!!.restaurantName = mainActivity!!.place!!.results[position].name
+                    mainActivity!!.restaurantID = mainActivity!!.places!![position].place_id
+                    mainActivity!!.restaurantName = mainActivity!!.places!![position].name
                     mainActivity!!.execRequest(mainActivity!!.CODE_DETAILS)
                 }
     }
@@ -93,13 +92,12 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
      * called while request get back models
      */
     private fun updateUI() {
-        val place = mainActivity!!.place!!
         if (results != null)
             results!!.clear()
         else
             results = ArrayList()
 
-        results!!.addAll(place.results)
+        results!!.addAll(mainActivity!!.places!!)
 
         if (results!!.size != 0) {
             mView!!.findViewById<TextView>(R.id.no_result_text).visibility = GONE

@@ -29,8 +29,8 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
     }
 
     /**
+     * @param context Context
      * @param contact Contact
-     * @param glide RequestManager
      * @param callback NewsAdapter.Listener
      * UPDATE NEWS ITEM LIST
      */
@@ -46,8 +46,6 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
 
         callbackWeakRef = WeakReference(callback)
     }
-
-
 
         /**
      * @param view View

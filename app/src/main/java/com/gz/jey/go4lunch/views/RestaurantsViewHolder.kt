@@ -13,8 +13,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.SphericalUtil
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.ApiPhoto
@@ -59,23 +57,32 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
     }
 
     /**
+     * @param key String
+     * @param context Context
+     * @param allContact Int
      * @param res Result
-     * @param glide RequestManager
      * @param callback NewsAdapter.Listener
-     * UPDATE NEWS ITEM LIST
+     * UPDATE RESTAURANTS LIST
      */
-    fun updateRestaurants(key: String, context : Context, allContact : Int, startLatLng: LatLng, res: Result, callback: RestaurantsAdapter.Listener) {
+    fun updateRestaurants(key: String, context : Context, allContact : Int, res: Result, callback: RestaurantsAdapter.Listener) {
 
-        this.address!!.text = res.formattedAddress
+        val sb = StringBuilder()
+            sb.append("REST NAME = ").append(res.name).append("\r\n")
+            sb.append("ADRESS = ").append(res.formatted_address).append("\r\n")
+            sb.append("REST NAME = ").append(res.name).append("\r\n")
+
+        Log.d("RESTAURANT CREATED" , sb.toString())
+
+        this.address!!.text = res.formatted_address
         this.name!!.text = res.name
         val open : Boolean
         val oc : String
         when {
-            res.openingHours==null || res.openingHours.openNow==null -> {
+            res.opening_hours?.openNow == null -> {
                 oc = ""
                 open = false
             }
-            res.openingHours.openNow -> {
+            res.opening_hours.openNow!! -> {
                 oc = context.getString(R.string.open)
                 open = true
             }
@@ -91,12 +98,12 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
 
         this.openTime!!.text = oc
         setTime(context, open)
-        this.distance!!.text = getDistance(res.distance)
+        this.distance!!.text = getDistance(res.distance!!)
         val amount = res.workmates.size
         val amString = "($amount)"
         this.workmatesAmount!!.text = amString
         this.workmatesIcon!!.setImageDrawable(SetImageColor.changeDrawableColor(context, R.drawable.perm_identity, Color.BLACK))
-        when(CalculateRatio.getRateOn3(res.rating)){
+        when(CalculateRatio.getRateOn3(res.rating!!)){
             1 -> {this.firstStar!!.setImageDrawable(googleStar)
                 this.secondStar!!.setImageDrawable(emptyStar)
                 this.thirdStar!!.setImageDrawable(emptyStar)
@@ -123,16 +130,12 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
         }
 
         if(res.photos!=null) {
-            val imgLink = ApiPhoto.getPhotoURL(100, res.photos[0].photoReference, key)
+            val imgLink = ApiPhoto.getPhotoURL(100, res.photos[0].photo_reference!!, key)
             Glide.with(context)
                     .load(imgLink)
                     .into(restaurantImg!!)
         }else
             restaurantImg!!.background = getDrawable(context, R.drawable.no_pic)
-
-
-
-
 
         callbackWeakRef = WeakReference(callback)
     }

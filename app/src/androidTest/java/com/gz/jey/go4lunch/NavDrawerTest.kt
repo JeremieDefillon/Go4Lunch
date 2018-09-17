@@ -28,8 +28,8 @@ class NavDrawerTest {
      * The setUp
      */
     @Before
-    fun SetUp() {
-        mActivity = mActivityRule.getActivity()
+    fun setUp() {
+        mActivity = mActivityRule.activity
         mDrawerLayout = mActivity!!.findViewById(R.id.activity_main_drawer_layout)
     }
 
@@ -37,7 +37,7 @@ class NavDrawerTest {
      * to Test if drawer is closed
      */
     @Test
-    fun NavDrawerStartisClosed() {
+    fun navDrawerStartIsClosed() {
         // Left Drawer should be closed.
         Assert.assertFalse("Drawer Closed", mDrawerLayout!!.isDrawerOpen(GravityCompat.START))
     }
@@ -48,10 +48,10 @@ class NavDrawerTest {
      */
     @Test
     @Throws(InterruptedException::class)
-    fun NavDrawerStartIsOpened() {
+    fun navDrawerStartIsOpened() {
         // Open Drawer & check if is open.
-        mActivity = mActivityRule.getActivity()
-        mActivity?.runOnUiThread(Runnable { mDrawerLayout!!.openDrawer(GravityCompat.START) })
+        mActivity = mActivityRule.activity
+        mActivity?.runOnUiThread { mDrawerLayout!!.openDrawer(GravityCompat.START) }
         Thread.sleep(2000)
         Assert.assertTrue("Drawer Opened", mDrawerLayout!!.isDrawerOpen(GravityCompat.START))
     }

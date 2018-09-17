@@ -6,12 +6,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.bumptech.glide.RequestManager
 import com.gz.jey.go4lunch.R
-import com.gz.jey.go4lunch.api.UserHelper
 import com.gz.jey.go4lunch.models.Contact
 
 class WorkmatesAdapter
 /**
- * @param myContacts List<MyContacts>
+ * @param contacts List<Contact>
  * @param glide RequestManager
  * @param callback Listener */
 (
@@ -58,11 +57,4 @@ class WorkmatesAdapter
         return this.contacts.size
     }
 
-    /**
-     * @param position int
-     * @return Result
-     */
-    fun getWorkmates(position: Int): Contact {
-        return this.contacts[position]
-    }
 }
