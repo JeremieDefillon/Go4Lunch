@@ -61,6 +61,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     private var selectRestaurant : ImageView? = null
 
     /**
+     * CALLED ON INSTANCE OF THIS FRAGMENT TO CREATE VIEW
      * @param inflater LayoutInflater
      * @param container ViewGroup
      * @param savedInstanceState Bundle
@@ -83,6 +84,11 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         return mView
     }
 
+    /**
+     * CALLED WHEN VIEW CREATED
+     * @param view View
+     * @param savedInstanceState Bundle
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setViews(view)
@@ -91,7 +97,8 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     }
 
     /**
-     * to set the views
+     * SET THE VIEWS
+     * @param view View
      */
     private fun setViews(view : View){
         restaurantImage = view.findViewById(R.id.restaurant_image)
@@ -115,7 +122,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     }
 
     /**
-     * to set the RecyclerView
+     * SET THE RECYCLER VIEW
      */
     private fun setRecyclerView() {
         contacts = ArrayList()
@@ -133,7 +140,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
     }
 
     /**
-     * to set the details
+     * SET RESTAURANT DETAILS
      */
     private fun setDetails(){
         restaurant = mainActivity!!.details!!.result
@@ -145,14 +152,14 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             if(c.restLiked.contains(restaurant!!.place_id))
                 restaurant!!.liked ++
 
-        if(restaurant!!.photos.isNotEmpty()) {
-            val imgLink = ApiPhoto.getPhotoURL(500, restaurant!!.photos[0].photo_reference!!, getString(R.string.google_maps_key))
+        if(restaurant!!.photos != null && restaurant!!.photos!!.isNotEmpty()) {
+            val imgLink = ApiPhoto.getPhotoURL(500, restaurant!!.photos!![0].photo_reference!!, getString(R.string.google_maps_key))
             Glide.with(this)
                     .load(imgLink)
                     .into(restaurantImage!!)
         }
 
-        restaurantName!!.text = if(restaurant!!.name.length>25) restaurant!!.name.substring(0,22)+" ..." else restaurant!!.name
+        restaurantName!!.text = if(restaurant!!.name!!.length>25) restaurant!!.name!!.substring(0,22)+" ..." else restaurant!!.name
         restaurantAddress!!.text = restaurant!!.vicinity
 
         val emptyStar = SetImageColor.changeDrawableColor(context!!, R.drawable.star_rate, ContextCompat.getColor(context!!, R.color.colorTransparent))
@@ -169,7 +176,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         thirdStar!!.x = xSize
         thirdStar!!.y = ySize
 
-        when(CalculateRatio.getRateOn3(restaurant!!.rating)){
+        when(CalculateRatio.getRateOn3(restaurant!!.rating!!)){
             0->{this.firstStar!!.setImageDrawable(emptyStar)
                 this.secondStar!!.setImageDrawable(emptyStar)
                 this.thirdStar!!.setImageDrawable(emptyStar)
@@ -202,9 +209,12 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         callTxt!!.text = getString(R.string.call)
         var number = restaurant!!.formatted_phone_number
         var open : Boolean? = null
-        if(restaurant!!.opening_hours != null)
-            open = restaurant!!.opening_hours.openNow
-        if(number!=null && !number.isEmpty() && open!=null && open){
+        if(restaurant!!.opening_hours!=null)
+            open = if(restaurant!!.opening_hours!!.openNow!=null)
+                restaurant!!.opening_hours!!.openNow!!
+            else
+                false
+        if(!number!!.isEmpty() && open!!){
             number = number.replace(" ","")
             call!!.setOnClickListener {
                 mainActivity!!.callTo(number)
@@ -228,9 +238,9 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         setLike(liked)
 
         websiteTxt!!.text = getString(R.string.website)
-        if(restaurant!!.website!=null && !restaurant!!.website.isEmpty()){
+        if(restaurant!!.website!= null && restaurant!!.website!!.isNotEmpty()){
             website!!.setOnClickListener {
-                mainActivity!!.openWebsite(restaurant!!.website)
+                mainActivity!!.openWebsite(restaurant!!.website!!)
             }
             websiteTxt!!.setTextColor(ContextCompat.getColor(this.context!!, R.color.colorPrimaryDark))
             websiteImg!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.world, ContextCompat.getColor(mainActivity!!, R.color.colorPrimaryDark)))
@@ -264,6 +274,9 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         updateUI(workmate)
     }
 
+    /**
+     * CALLED WHEN CLICK TO ADD RESTAURANT TO WISH
+     */
     private fun goToRestaurant(){
         selectRestaurant!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.check_circle, ContextCompat.getColor(mainActivity!!, R.color.colorAccent)))
         mainActivity!!.user!!.whereEatID = mainActivity!!.restaurantID!!
@@ -278,6 +291,9 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         }
     }
 
+    /**
+     * CALLED WHEN CLICK TO REMOVE RESTAURANT FROM WISH
+     */
     private fun removeRestaurant(){
         selectRestaurant!!.setImageDrawable(SetImageColor.changeDrawableColor(mainActivity!!, R.drawable.check, ContextCompat.getColor(mainActivity!!, R.color.colorGrey)))
         mainActivity!!.restaurantID = ""
@@ -294,6 +310,10 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         }
     }
 
+    /**
+     * SET LIKE OR NOT
+     * @param liked Boolean
+     */
     private fun setLike(liked : Boolean){
         if(liked){
             like!!.setOnClickListener {
@@ -307,7 +327,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         }else{
             like!!.setOnClickListener {
                 val nliked = true
-                mainActivity!!.user!!.restLiked.add(restaurant!!.place_id)
+                mainActivity!!.user!!.restLiked.add(restaurant!!.place_id!!)
                 UserHelper.updateUser(mainActivity!!.user!!.uid, mainActivity!!.user!!)
                 setLike(nliked)
             }
@@ -319,8 +339,8 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
 
     /**
+     * CALLED TO UPDATE WORKMATE LIST
      * @param workmate ArrayList<Contact>
-     * called while request get back models
      */
     private fun updateUI(workmate: ArrayList<Contact>) {
         if(contacts!=null)

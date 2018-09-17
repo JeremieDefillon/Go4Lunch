@@ -8,7 +8,6 @@ import android.os.Build
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.ContextCompat.getDrawable
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -66,23 +65,16 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
      */
     fun updateRestaurants(key: String, context : Context, allContact : Int, res: Result, callback: RestaurantsAdapter.Listener) {
 
-        val sb = StringBuilder()
-            sb.append("REST NAME = ").append(res.name).append("\r\n")
-            sb.append("ADRESS = ").append(res.formatted_address).append("\r\n")
-            sb.append("REST NAME = ").append(res.name).append("\r\n")
-
-        Log.d("RESTAURANT CREATED" , sb.toString())
-
         this.address!!.text = res.formatted_address
         this.name!!.text = res.name
         val open : Boolean
         val oc : String
         when {
-            res.opening_hours?.openNow == null -> {
+            res.opening_hours?.open_now == null -> {
                 oc = ""
                 open = false
             }
-            res.opening_hours.openNow!! -> {
+            res.opening_hours.open_now!! -> {
                 oc = context.getString(R.string.open)
                 open = true
             }
@@ -140,6 +132,11 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
         callbackWeakRef = WeakReference(callback)
     }
 
+    /**
+     * GET DISTANCE
+     * @param dist Double
+     * @return String
+     */
     private fun getDistance(dist : Double) : String{
         return if(dist>999)
             (dist/1000).toInt().toString()+" km"
@@ -147,6 +144,11 @@ internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.O
             dist.toInt().toString()+" m"
     }
 
+    /**
+     * SET TIME
+     * @param context Context
+     * @param open Boolean
+     */
     private fun setTime(context : Context, open : Boolean){
         if(open){
             this.openTime!!.setTextColor(ContextCompat.getColor(context, R.color.colorOpen))

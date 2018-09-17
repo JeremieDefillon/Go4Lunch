@@ -13,8 +13,10 @@ import java.util.concurrent.TimeUnit
 
 object ApiStreams {
 
-    // creating and configuring the retrofit
-    // building retrofit
+    /**
+     * RETROFIT BUILDER
+     * @return Retrofit
+     */
     private val retrofit: Retrofit
         get() {
             return Retrofit.Builder()
@@ -24,7 +26,13 @@ object ApiStreams {
                     .build()
         }
 
-    // method to call and pass the request via an observable for the GooglePlace API
+    /**
+     * FETCH RESTAURANTS LIST REQUEST WITH GOOGLE PLACE
+     * @param key String
+     * @param loc LatLng
+     * @param lang Int
+     * @return Observable<Place>
+     */
     fun streamFetchRestaurants(key: String, loc: LatLng , lang: Int): Observable<Place> {
         val location = loc.latitude.toString()+","+loc.longitude.toString()
         //location = "45.750000,4.850000"
@@ -41,6 +49,13 @@ object ApiStreams {
                 .timeout(20, TimeUnit.SECONDS)
     }
 
+    /**
+     * FETCH RESTAURANT DETAILS REQUEST WITH GOOGLE PLACE
+     * @param key String
+     * @param id String
+     * @param lang Int
+     * @return Observable<Details>
+     */
     fun streamFetchDetails(key: String, id:String, lang: Int): Observable<Details> {
         val fields = "place_id,name,vicinity,photo,opening_hours,rating,international_phone_number,formatted_phone_number,website,types"
         val language = if (lang==1) "fr" else "en"

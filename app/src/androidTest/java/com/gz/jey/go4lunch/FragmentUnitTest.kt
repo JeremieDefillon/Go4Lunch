@@ -66,9 +66,6 @@ class FragmentUnitTest {
         testFragment(fragment, flContainer!!, R.id.map)
     }
 
-
-
-
     /**
      * @param fragment Fragment
      * @param container View

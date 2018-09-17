@@ -33,14 +33,31 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
     private val geoDataClient = geoData
     private val mPlaceFilter = filter
 
+
+    /**
+     * GET RESULT SIZE
+     * @return Int
+     */
     override fun getCount(): Int {
         return resultList.size
     }
 
+    /**
+     * GET ITEM
+     * @param position Int
+     * @return AutocompletePrediction
+     */
     override fun getItem(position: Int): AutocompletePrediction? {
         return resultList[position]
     }
 
+    /**
+     * GET VIEW
+     * @param position Int
+     * @param convertView View
+     * @param parent ViewGroup
+     * @return View
+     */
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val row = super.getView(position, convertView, parent)
         val item = getItem(position)
@@ -50,6 +67,10 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
         return row
     }
 
+    /**
+     * GET FILTER
+     * @return Filter
+     */
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): Filter.FilterResults {
@@ -86,7 +107,7 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
                         ApiStreams.streamFetchDetails(key, r.placeId!!, 0)
                                 .subscribeWith(object : DisposableObserver<Details>() {
                                     override fun onNext(details: Details) {
-                                        val fType = details.result.types
+                                        val fType = details.result!!.types!!
                                         /*for(r in fType){
                                             Log.d("TYPE" , r.toString())
                                         }*/
@@ -132,6 +153,11 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
         }
     }
 
+    /**
+     * GET AUTOCOMPLETE
+     * @param constraint CharSequence
+     * @return ArrayList<AutocompletePrediction>
+     */
     private fun getAutocomplete(constraint: CharSequence): ArrayList<AutocompletePrediction>? {
         Log.i(TAG, "Starting autocomplete query for:$constraint")
 

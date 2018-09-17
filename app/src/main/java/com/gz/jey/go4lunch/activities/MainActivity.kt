@@ -141,7 +141,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     // FOR REQUEST
     private var disposable : Disposable? = null
-
+    /**
+     * @param savedInstanceState Bundle
+     * CREATE ACTIVITY
+     */
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_main)
@@ -174,6 +177,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * INIT ACTIVITY
+     */
     private fun initActivity(){
         saveDatas()
         if(!CheckIfTest.isRunningTest("NavDrawerTest"))
@@ -204,6 +210,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * SET LOCALISATION DATA
+     */
     private fun setLocalisationData(){
         // Construct a GeoDataClient.
         mGeoDataClient = Places.getGeoDataClient(applicationContext)
@@ -213,7 +222,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(applicationContext)
     }
 
-    // Configure Toolbar
+    /**
+     * CONFIGURE TOOLBAR
+     */
     private fun configureToolBar() {
         this.toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -226,7 +237,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         rlp.setMargins(20,20,20,20)
     }
 
-   // Configure SearchBar
+    /**
+     * CONFIGURE SEARCHBAR
+     */
     private fun configureSearchBar(tab : Int) {
 
        val searchWorkmate : TextInputEditText = searchBar!!.findViewById(R.id.search_workmate)
@@ -280,6 +293,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
        }
     }
 
+    /**
+     * @param input AutoCompleteTextView
+     * SET ON CLICK RESTAURANT'S SEARCH
+     */
     @SuppressLint("ClickableViewAccessibility")
     private fun setOnClickSearchRestaurant(input : AutoCompleteTextView){
         val search = SetImageColor.changeDrawableColor(this ,R.drawable.search, ContextCompat.getColor(this, R.color.colorGrey))
@@ -318,6 +335,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * @param input TextInputEditText
+     * SET ON CLICK WORKMATE'S SEARCH
+     */
     @SuppressLint("ClickableViewAccessibility")
     private fun setOnClickSearchWorkmate(input : TextInputEditText){
         val search = SetImageColor.changeDrawableColor(this ,R.drawable.search, ContextCompat.getColor(this, R.color.colorGrey))
@@ -356,6 +377,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * @param input EditText
+     * START SPEECH ON
+     */
     private fun startSpeechToText(input: EditText) {
         val mic= SetImageColor.changeDrawableColor(this ,R.drawable.mic, ContextCompat.getColor(this, R.color.colorAccent))
         val cross = SetImageColor.changeDrawableColor(this ,R.drawable.close, ContextCompat.getColor(this, R.color.colorBlack))
@@ -392,6 +417,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     /**
+     * @param menu Menu
      * @return true
      */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -424,7 +450,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    // Configure BottomBar
+    /**
+     * CONFIGURE BOTTOM BAR
+     */
     private fun configureBottomBar() {
         this.bottom = this.findViewById(R.id.bottom_menu)
         this.bottom!!.selectedItemId = when(Data.tab) {
@@ -454,7 +482,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     /**
-     * Configure Drawer Layout
+     * CONFIGURE DRAWER LAYOUT
      */
     private fun setDrawerLayout() {
         drawerLayout = findViewById(R.id.activity_main_drawer_layout)
@@ -465,7 +493,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     /**
-     * Configure NavigationView
+     * CONFIGURE NAVIGATION VIEW
      */
     private fun setNavigationView() {
         navigationView = findViewById(R.id.activity_main_nav_view)
@@ -520,7 +548,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     /**
      * @param index Int
-     * Change Fragment
+     * CHANGE FRAGMENT
      */
     private fun setFragment(index: Int){
         loadingContent!!.text = getString(R.string.loadingView)
@@ -579,6 +607,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * SET SPECIFIC FRAME LAYOUT
+     */
     private fun setSpecificFrame(){
         Data.tab = lastTab
         Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
@@ -597,12 +628,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setFrameLayoutMargin(false)
     }
 
+    /**
+     * @param msg String
+     * SEND MESSAGE VIA TOAST
+     */
     fun popupMsg(msg : String){
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
     /**
-     * the calling notifcation with alarmManager (once per day)
+     * SET NOTIFICATION WITH ALARM MANAGER
      */
     fun setNotification() {
         val cal = Calendar.getInstance()
@@ -620,7 +655,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     /**
-     * to disable notification
+     * DISABLE NOTIFICATION
      */
     fun cancelNotification() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -634,7 +669,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
     /**
-     * Set Settings
+     * DISCONNECT CURRENT USER
      */
     private fun disconnect(){
         if (this.getCurrentUser() != null) {
@@ -648,7 +683,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // REST REQUEST
     // --------------------
 
-    // request that create user in firestore
+    /**
+     * CHECK IF USER IS ON OR CREATE IT
+     */
     private fun checkUserInFirestore(){
         if (this.getCurrentUser() != null){
             val uid = getCurrentUser()!!.uid
@@ -662,6 +699,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * @param data DocumentSnapshot
+     * LOAD USER & CONTACTS FROM FIRESTORE
+     */
     @SuppressLint("SetTextI18n")
     @Suppress("UNCHECKED_CAST")
     private fun loadUserData(data : DocumentSnapshot){
@@ -737,9 +778,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * RANGE METHOD FOR CREATE RANDOM LIKES ON EACH USER
+     */
     //fun ClosedRange<Int>.random() = Random().nextInt((endInclusive + 1) - start) +  start
 
-    // Http request that create user in firestore
+    /**
+     * CREATE USER IN FIRESTORE OR BACK TO CHECK USER
+     */
     private fun createUserInFirestore(){
         if (this.getCurrentUser() != null){
             val mail = getCurrentUser()!!.email
@@ -756,10 +802,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * GET CURRENT USER FROM FIREBASE
+     * @return FirebaseUser
+     */
     private fun getCurrentUser(): FirebaseUser? {
         return FirebaseAuth.getInstance().currentUser
     }
 
+    /**
+     * IF CURRENT USER IS LOGGED
+     * @return Boolean
+     */
     fun isCurrentUserLogged(): Boolean? {
         return this.getCurrentUser() != null
     }
@@ -787,7 +841,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    // Create OnCompleteListener called after tasks ended
+    /**
+     * CREATE OnCompleteListener CALLED AFTER TASKS ENDED
+     * @param origin Int
+     * @return OnSuccessListener
+     */
     private fun updateUIAfterRESTRequestsCompleted(origin: Int): OnSuccessListener<Void> {
         setLoading(true, true)
         return OnSuccessListener {
@@ -800,6 +858,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * EXECUTE HTTP REQUEST WITH RETROFIT
+     * @param req Int
+     */
     fun execRequest(req : Int) {
         when (req) {
             CODE_GPS ->{
@@ -858,6 +920,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * SET RESTAURANTS LIST WITH THEIR DISTANCES
+     * @param p Place
+     */
     @SuppressLint("SetTextI18n")
     fun setAllRestaurants(p : Place){
         loadingContent!!.text = getString(R.string.checkingRestaurants)
@@ -876,6 +942,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * SET CONTACTS LIST WITH THEIR LIKES AND WHERE THEY EAT
+     */
     @SuppressLint("SetTextI18n")
     private fun setAllContacts(){
         loadingContent!!.text = getString(R.string.checkingDatas)
@@ -935,7 +1004,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     c.whereEatDate = nowTime
                     c.whereEatID = ""
                     c.whereEatName = ""
-                    // UNCOMMENT UNDER IF WANNA SETUP FIRESTORE BUT UPDATE AUTORIZATION WITH
+                    // UNCOMMENT UNDER IF WANNA SETUP FIRESTORE BUT UPDATE AUTHORISATION WITH
                     //UserHelper.updateContact(c.uid, c)
                 }
             }
@@ -952,13 +1021,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * SET DETAILS RESTAURANT
+     * @param det Details
+     */
     fun setDetailsObject(det: Details){
         gettingDetails=false
         this.details = det
 
-        val fType = details!!.result.types
+        val fType = details!!.result!!.types
 
-        if(fType.contains("meal_takeaway") || fType.contains("restaurant")) {
+        if(fType!!.contains("meal_takeaway") || fType.contains("restaurant")) {
             Data.tab = 4
             saveDatas()
             setFragment(4)
@@ -967,6 +1040,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * GET DEVICE LOCATION
+     */
     @SuppressLint("MissingPermission")
     fun getDeviceLocation() {
         mFusedLocationProviderClient.lastLocation
@@ -993,6 +1069,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
     }
 
+    /**
+     * CALL TO DEFINED TELEPHONE NUMBER
+     * @param number String
+     */
     @SuppressLint("MissingPermission")
     fun callTo(number: String){
         if (mPhoneCallPermissionGranted) {
@@ -1006,6 +1086,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * LOAD WEBSITE WITH DEFINED URL
+     * @param url String
+     */
     fun openWebsite(url:String){
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startActivity(intent)
@@ -1015,13 +1099,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // ERROR HANDLER
     // --------------------
 
-    private fun onFailureListener()
-    : OnFailureListener {
+    /**
+     * SET ON FAILURE LISTENER
+     * @return OnFailureListener
+     */
+    private fun onFailureListener() : OnFailureListener {
         return OnFailureListener {
             Toast.makeText(applicationContext, getString(R.string.error_unknown_error), Toast.LENGTH_LONG).show()
         }
     }
 
+    /**
+     * SET FRAME LAYOUT MARGIN
+     * @param gotMarge Boolean
+     */
     private fun setFrameLayoutMargin(gotMarge : Boolean){
         val marge = calculateActionBar()
         val bottom = if(gotMarge) marge else 0
@@ -1030,6 +1121,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         fragmentContainer!!.layoutParams = layoutParams
     }
 
+    /**
+     * GET ACTION BAR SIZE
+     * @return Int
+     */
     private fun calculateActionBar() : Int {
         // Calculate ActionBar height
         val tv = TypedValue()
@@ -1041,6 +1136,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     // HANDLE PERMISSIONS
 
+    /**
+     * GET LOCATION PERMISSION
+     */
     fun getLocationPermission() {
         /*
      * Request location permission, so that we can get the location of the
@@ -1057,12 +1155,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * GET MICROPHONE PERMISSION
+     */
     private fun getMicrophonePermission(){
 
         if (ContextCompat.checkSelfPermission(applicationContext,
                         android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
             mMicrophonePermissionGranted = true
-            //micro(number!!)
         } else {
             ActivityCompat.requestPermissions(this,
                     arrayOf(android.Manifest.permission.RECORD_AUDIO),
@@ -1070,6 +1170,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * GET PHONE CALL PERMISSION
+     */
     private fun getPhoneCallPermission() {
         /*
      * Request phone call permission.
@@ -1087,6 +1190,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * ON REQUEST PERMISSION RESULT
+     * @param requestCode Int
+     * @param permissions Array<String>
+     * @param grantResults IntArray
+     */
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>,
                                             grantResults: IntArray) {
@@ -1112,12 +1221,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mMicrophonePermissionGranted = true
-                    //micro(number!!)
                 }
             }
         }
     }
 
+    /**
+     * SET LOADING FRAME
+     * @param type Boolean
+     * @param onoff Boolean
+     */
     fun setLoading(type : Boolean, onoff : Boolean){
         val fllp : DrawerLayout.LayoutParams = loading!!.layoutParams as DrawerLayout.LayoutParams
         if(onoff){
@@ -1140,7 +1253,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     /**
-     * load all the saved datas from Preferences
+     * LOAD ALL THE SAVED DATAS FROM PREFERENCES
      */
     private fun loadDatas() {
         Data.lang = getPreferences(Context.MODE_PRIVATE).getInt("LANG", 0)
@@ -1151,7 +1264,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     /**
-     * Save all the datas into Preferences
+     * SAVE ALL THE DATAS INTO PREFERENCES
      */
     fun saveDatas() {
         val preferences = getPreferences(Context.MODE_PRIVATE)
@@ -1163,6 +1276,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         editor.apply()
     }
 
+    /**
+     * HIDE KEYBOARD
+     */
     private fun hideKeyboard() {
         try {
             val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -1172,6 +1288,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * DISPLAY KEYBOARD
+     * @param input View
+     */
     private fun displayKeyboard(input : View) {
         try {
             val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

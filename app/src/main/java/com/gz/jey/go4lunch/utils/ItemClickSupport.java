@@ -7,6 +7,7 @@ public class ItemClickSupport {
     private final RecyclerView mRecyclerView;
     private OnItemClickListener mOnItemClickListener;
 
+
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
         /**
          * @param v View

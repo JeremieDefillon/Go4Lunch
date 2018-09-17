@@ -21,6 +21,7 @@ class SettingsFragment : Fragment() {
     private var filterChoice: RadioGroup? = null
 
     /**
+     * CALLED ON INSTANCE OF THIS FRAGMENT TO CREATE VIEW
      * @param inflater LayoutInflater
      * @param container ViewGroup
      * @param savedInstanceState Bundle
@@ -32,11 +33,19 @@ class SettingsFragment : Fragment() {
         return mView
     }
 
+    /**
+     * CALLED WHEN VIEW CREATED
+     * @param view View
+     * @param savedInstanceState Bundle
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setOnClicks()
     }
 
+    /**
+     * SET ON CLICKS FUNCTION FROM SETTINGS
+     */
     private fun setOnClicks(){
         enableNotifSwitch = mView!!.findViewById(R.id.switch_enable_notification)
         enableNotifSwitch!!.isChecked = Data.enableNotif
@@ -80,7 +89,7 @@ class SettingsFragment : Fragment() {
     companion object {
         /**
          * @param mainActivity MainActivity
-         * @return new com.gz.jey.go4lunch.fragments.SettingsFragment()
+         * @return SettingsFragment()
          */
         fun newInstance(mainActivity : MainActivity): SettingsFragment {
             val fragment = SettingsFragment()

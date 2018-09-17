@@ -33,6 +33,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
 
 
     /**
+     * CALLED ON INSTANCE OF THIS FRAGMENT TO CREATE VIEW
      * @param inflater LayoutInflater
      * @param container ViewGroup
      * @param savedInstanceState Bundle
@@ -43,12 +44,21 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
         return mView
     }
 
+    /**
+     * CALLED WHEN VIEW CREATED
+     * @param view View
+     * @param savedInstanceState Bundle
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mSupportMapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mSupportMapFragment!!.getMapAsync(this)
     }
 
+    /**
+     * CALLED WHEN MAP IS READY
+     * @param map GoogleMap
+     */
     override fun onMapReady(map: GoogleMap) {
         Log.d(TAG,"ON MAP READY")
         mMap = map
@@ -106,6 +116,11 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
         }
     }
 
+    /**
+     * CALLED WHEN MARKER IS CLICKED
+     * @param p0 GoogleMap
+     * @return Boolean
+     */
     override fun onMarkerClick(p0: Marker?) : Boolean {
         mainActivity!!.setLoading(false, true)
         for(r in mainActivity!!.places!!){
@@ -119,10 +134,11 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
         return true
     }
 
+
     companion object {
         /**
          * @param mainActivity MainActivity
-         * @return new SignInFragment()
+         * @return new MapViewFragment()
          */
         fun newInstance(mainActivity : MainActivity): MapViewFragment {
             val fragment = MapViewFragment()

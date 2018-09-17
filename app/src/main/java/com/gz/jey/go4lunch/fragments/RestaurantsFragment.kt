@@ -16,7 +16,6 @@ import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.models.Result
 import com.gz.jey.go4lunch.utils.ItemClickSupport
 import com.gz.jey.go4lunch.views.RestaurantsAdapter
-import io.reactivex.disposables.Disposable
 import java.util.*
 
 class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
@@ -27,12 +26,12 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
     private var recyclerView: RecyclerView? = null
 
     var mainActivity: MainActivity? = null
-    private var disposable: Disposable? = null
 
     private var results: ArrayList<Result>? = null
     private var restaurantsAdapter: RestaurantsAdapter? = null
 
     /**
+     * CALLED ON INSTANCE OF THIS FRAGMENT TO CREATE VIEW
      * @param inflater LayoutInflater
      * @param container ViewGroup
      * @param savedInstanceState Bundle
@@ -45,6 +44,11 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
         return mView
     }
 
+    /**
+     * CALLED WHEN VIEW CREATED
+     * @param view View
+     * @param savedInstanceState Bundle
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setRecyclerView()
@@ -53,7 +57,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
     }
 
     /**
-     * to set the RecyclerView
+     * SET THE RECYCLER VIEW
      */
     private fun setRecyclerView() {
         results = ArrayList()
@@ -76,7 +80,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
     // -----------------
 
     /**
-     * to Set the onClick function from items in RecyclerView
+     * SET ALL ONCLICKS FROM ITEMS IN RECYCLERVIEW
      */
     private fun setOnClickRecyclerView() {
         ItemClickSupport.addTo(recyclerView!!, R.layout.restaurant_item)
@@ -89,7 +93,7 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
     }
 
     /**
-     * called while request get back models
+     * TO UPDATE RESTAURANT LIST
      */
     private fun updateUI() {
         if (results != null)
@@ -107,22 +111,6 @@ class RestaurantsFragment : Fragment(), RestaurantsAdapter.Listener{
             view!!.findViewById<TextView>(R.id.no_result_text).text = getString(R.string.none_restaurant)
         }
         mainActivity!!.setLoading(false, false)
-    }
-
-    /**
-     * to Destroy fragment
-     */
-    override fun onDestroy() {
-        super.onDestroy()
-        disposeWhenDestroy()
-    }
-
-    /**
-     * to destroy disposable and avoid memory leaks
-     */
-    private fun disposeWhenDestroy() {
-        if (disposable != null && !disposable!!.isDisposed)
-            disposable!!.dispose()
     }
 
     companion object {

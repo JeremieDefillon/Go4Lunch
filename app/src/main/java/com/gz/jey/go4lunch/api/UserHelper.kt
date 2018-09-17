@@ -12,32 +12,58 @@ object UserHelper {
 
     private const val COLLECTION_NAME : String = "users"
 
-    // --- COLLECTION REFERENCE ---
-
+    /**
+     * GET USER'S COLLECTION
+     * @return CollectionReference
+     */
     fun getUsersCollection() : CollectionReference {
         return FirebaseFirestore.getInstance().collection(COLLECTION_NAME)
     }
 
-    // --- CREATE ---
-
+    /**
+     * CREATE USER
+     * @param uid String
+     * @param username String
+     * @param email String
+     * @param urlPicture String
+     * @param whereEatID String
+     * @param whereEatName String
+     * @param whereEatDate String
+     * @param restLiked ArrayList<String>
+     * @return Task<Void>
+     */
     fun createUser(uid : String, username : String, email: String, urlPicture : String, whereEatID : String, whereEatName : String, whereEatDate: String, restLiked : ArrayList<String>) : Task<Void> {
         val userToCreate = User(uid, username, email, urlPicture, whereEatID, whereEatName, whereEatDate, restLiked)
         return UserHelper.getUsersCollection().document(uid).set(userToCreate)
     }
 
-    // --- UPDATE ---
-
+    /**
+     * UPDATE USER
+     * @param uid String
+     * @param user User
+     * @return Task<Void>
+     *     */
     fun updateUser(uid : String, user : User) : Task<Void> {
         return UserHelper.getUsersCollection().document(uid).set(user)
     }
 
-    /*fun updateContact(uid : String, contact : Contact) : Task<Void> {
+    /*
+    /**
+     * UPDATE CONTACT
+     * @param uid String
+     * @param contact Contact
+     * @return Task<Void>
+     *     */
+    fun updateContact(uid : String, contact : Contact) : Task<Void> {
         return UserHelper.getUsersCollection().document(uid).set(contact)
     }*/
 
 
-    // --- GET ---
-
+    /**
+     * GET USER
+     * @param uid String
+     * @return Task<DocumentSnapshot>
+     *     */
     fun getUser(uid : String) : Task<DocumentSnapshot>{
         return UserHelper.getUsersCollection().document(uid).get()
     }

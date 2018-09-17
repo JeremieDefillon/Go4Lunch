@@ -41,7 +41,7 @@ class NotificationReceiver : BroadcastReceiver() {
     /**
      * @param context Context
      * @param intent Intent
-     * to request article with articleSearch parameters
+     * ON RECEIVING NOTIFICATIONS FROM ALARM MANAGER
      */
     override fun onReceive(context: Context, intent: Intent) {
         val extra = intent.extras!!
@@ -61,7 +61,7 @@ class NotificationReceiver : BroadcastReceiver() {
     /**
      * @param data DocumentSnapshot
      * @param context Context
-     * to build models results with the returned request
+     * TO LOAD DATA FROM FIRESTORE & RESTAURANT DETAILS
      */
     @Suppress("UNCHECKED_CAST")
     private fun loadData(data : DocumentSnapshot, context:Context){
@@ -125,8 +125,9 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     /**
+     * @param det DETAILS
      * @param context Context
-     * build the notification and pop it if results resturned a new article
+     * BUILD NOTIFICATION
      */
     private fun buildNotification(det: Details, context: Context) {
 
@@ -136,7 +137,7 @@ class NotificationReceiver : BroadcastReceiver() {
             val eatTime : Calendar = Calendar.getInstance()
             eatTime.time = df.parse(c.whereEatDate)
 
-            if(eatTime.after(today) && c.whereEatID == det.result.place_id)
+            if(eatTime.after(today) && c.whereEatID == det.result!!.place_id)
                 coming.add(c.username)
         }
 
@@ -157,7 +158,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
         val repeatingIntent = Intent(context, MainActivity::class.java)
         repeatingIntent.putExtra("NotiClick", true)
-        repeatingIntent.putExtra("RestaurantId", det.result.place_id)
+        repeatingIntent.putExtra("RestaurantId", det.result!!.place_id)
         repeatingIntent.putExtra("RestaurantName", det.result.name)
         repeatingIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
@@ -189,13 +190,15 @@ class NotificationReceiver : BroadcastReceiver() {
         notificationManager.notify(987, builder.build())
     }
 
+    /**
+     * GET CURRENT USER
+     */
     private fun getCurrentUser(): FirebaseUser? {
         return FirebaseAuth.getInstance().currentUser
     }
 
-
     /**
-     * to destroy the disposable and avoid memoryLeaks
+     * TO DESTROY THE DISPOSABLE AND AVOID MEMORYLEAKS
      */
     private fun disposeWhenDestroy() {
         if (disposable != null && !disposable!!.isDisposed)

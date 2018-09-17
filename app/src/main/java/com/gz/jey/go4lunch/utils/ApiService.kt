@@ -7,10 +7,10 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface ApiService {
-
-
-    // the request for the google places search api
-    //https://maps.googleapis.com/maps/api/place/textsearch/json?type=restaurant&radius=50000&location=46.0056,4.7199&language=fr&key=KEY
+    /**
+     * REQUEST TO GET RESTAURANT AROUND LOCATION
+     * @return Observable<Place>
+     */
     @GET("maps/api/place/textsearch/json?")
     fun getRestaurants(
         @Query("type") type: String,
@@ -21,6 +21,10 @@ interface ApiService {
         @Query("key") key: String
     ) : Observable<Place>
 
+    /**
+     * REQUEST TO GET RESTAURANT DETAILS FROM A PLACE ID
+     * @return Observable<Details>
+     */
     @GET("maps/api/place/details/json?")
     fun getDetails(
             @Query("placeid") placeid: String,

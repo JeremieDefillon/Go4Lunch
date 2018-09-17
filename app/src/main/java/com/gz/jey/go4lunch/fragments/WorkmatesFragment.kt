@@ -14,7 +14,6 @@ import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.models.Contact
 import com.gz.jey.go4lunch.utils.ItemClickSupport
 import com.gz.jey.go4lunch.views.WorkmatesAdapter
-import io.reactivex.disposables.Disposable
 import java.util.*
 
 class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
@@ -25,12 +24,12 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
     private var recyclerView: RecyclerView? = null
 
     var mainActivity: MainActivity? = null
-    private var disposable: Disposable? = null
 
     private var contacts: ArrayList<Contact>? = null
     private var workmatesAdapter: WorkmatesAdapter? = null
 
     /**
+     * CALLED ON INSTANCE OF THIS FRAGMENT TO CREATE VIEW
      * @param inflater LayoutInflater
      * @param container ViewGroup
      * @param savedInstanceState Bundle
@@ -43,15 +42,20 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
         return mView
     }
 
+    /**
+     * CALLED WHEN VIEW CREATED
+     * @param view View
+     * @param savedInstanceState Bundle
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setRecyclerView()
         setOnClickRecyclerView()
-        initList()
+        updateUI(mainActivity!!.contacts!!)
     }
 
     /**
-     * to set the RecyclerView
+     * SET THE RECYCLER VIEW
      */
     private fun setRecyclerView() {
         contacts = ArrayList()
@@ -73,7 +77,7 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
     // -----------------
 
     /**
-     * to Set the onClick function from items in RecyclerView
+     * SET ON CLICKS FROM ITEMS IN RECYCLER VIEW
      */
     private fun setOnClickRecyclerView() {
         ItemClickSupport.addTo(recyclerView!!, R.layout.workmates_item)
@@ -93,13 +97,9 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
                 }
     }
 
-    private fun initList() {
-        updateUI(mainActivity!!.contacts!!)
-    }
-
     /**
+     * TO UPDATE WORKMATES LIST
      * @param cntc ArrayList<Contact>
-     * called while request get back models
      */
     fun updateUI(cntc : ArrayList<Contact>) {
         if (contacts != null)
@@ -117,22 +117,6 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
         }
         workmatesAdapter!!.notifyDataSetChanged()
         mainActivity!!.setLoading(false, false)
-    }
-
-    /**
-     * to Destroy fragment
-     */
-    override fun onDestroy() {
-        super.onDestroy()
-        disposeWhenDestroy()
-    }
-
-    /**
-     * to destroy disposable and avoid memory leaks
-     */
-    private fun disposeWhenDestroy() {
-        if (disposable != null && !disposable!!.isDisposed)
-            disposable!!.dispose()
     }
 
     companion object {

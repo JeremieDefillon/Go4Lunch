@@ -16,20 +16,8 @@ class SignInFragment : Fragment() {
     var mainActivity: MainActivity? = null
     val rcSignIn : Int = 123
 
-    companion object {
-        /**
-         * @param mainActivity MainActivity
-         * @return new SignInFragment()
-         */
-        fun newInstance(mainActivity : MainActivity): SignInFragment {
-            val fragment = SignInFragment()
-            fragment.mainActivity = mainActivity
-            return fragment
-        }
-    }
-
-
     /**
+     * CALLED ON INSTANCE OF THIS FRAGMENT TO CREATE VIEW
      * @param inflater LayoutInflater
      * @param container ViewGroup
      * @param savedInstanceState Bundle
@@ -41,6 +29,9 @@ class SignInFragment : Fragment() {
         return view
     }
 
+    /**
+     * START SIGN IN ACTIVITY
+     */
     private fun signInActivity(){
         startActivityForResult(
                 AuthUI.getInstance()
@@ -57,6 +48,7 @@ class SignInFragment : Fragment() {
     }
 
     /**
+     * ON ACTIVITY RESULT
      * @param requestCode Int
      * @param resultCode Int
      * @param data Intent
@@ -65,6 +57,18 @@ class SignInFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         // 4 - Handle SignIn Activity response on activity result
         mainActivity!!.handleResponseAfterSignIn(requestCode, resultCode, data)
+    }
+
+    companion object {
+        /**
+         * @param mainActivity MainActivity
+         * @return new SignInFragment()
+         */
+        fun newInstance(mainActivity : MainActivity): SignInFragment {
+            val fragment = SignInFragment()
+            fragment.mainActivity = mainActivity
+            return fragment
+        }
     }
 
 }
