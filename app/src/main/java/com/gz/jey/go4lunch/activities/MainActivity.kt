@@ -9,6 +9,9 @@ package com.gz.jey.go4lunch.activities
  import android.content.pm.PackageManager
  import android.net.Uri
  import android.os.Bundle
+ import android.speech.RecognitionListener
+ import android.speech.RecognizerIntent
+ import android.speech.SpeechRecognizer
  import android.support.design.widget.BottomNavigationView
  import android.support.design.widget.NavigationView
  import android.support.design.widget.TextInputEditText
@@ -69,7 +72,6 @@ package com.gz.jey.go4lunch.activities
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
 
-
     // FRAGMENTS
     private val TAG = "MainActivity"
     private var signInFragment: SignInFragment? = null
@@ -78,20 +80,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var workmatesFragment: WorkmatesFragment? = null
     private var detailsFragment: RestaurantDetailsFragment? = null
     private var settingsFragment: SettingsFragment? = null
-    lateinit var placesAdapter: PlacesAdapter
+    private lateinit var placesAdapter: PlacesAdapter
 
     // FOR PERMISSIONS
     private val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 34
     var mLocationPermissionGranted: Boolean = false
     private val PERMISSIONS_REQUEST_PHONE_CALL = 69
     private var mPhoneCallPermissionGranted = false
+    private val PERMISSIONS_MICROPHONE = 75
+    private var mMicrophonePermissionGranted = false
 
     // TASK CODE
     private val SIGN_OUT_TASK = 99
-    val GPS = 10
-    val RESTAURANTS = 34
-    val CONTACTS = 37
-    val DETAILS = 44
+    private val CODE_GPS = 10
+    val CODE_RESTAURANTS = 34
+    private val CODE_CONTACTS = 37
+    val CODE_DETAILS = 44
 
     // FOR POSITION
     private var mGeoDataClient : GeoDataClient? = null
@@ -110,34 +114,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var navigationView: NavigationView? = null
     private var accountPicture : ImageView? = null
     var loading : FrameLayout? = null
+    private var loadingContent : TextView? = null
 
     // FOR DATA
     var user : User? = null
-    var contacts : ArrayList<Contact> = ArrayList()
+    var contacts : ArrayList<Contact>? = null
     var place : Place? = null
     var details : Details? = null
-    var lastTab = 1
+    private var lastTab = 2
     private var username : String?= null
     var email : String?= null
     private var number : String? = null
     var lang = 1
     private var hiddenItems = false
-    var fromNotif : Boolean = false
+    private var fromRestaurants : Boolean = false
+    private var fromNotif : Boolean = false
+    private var fromDetails : Boolean = false
+    private var gettingContacts : Boolean = false
+    private var gettingRestaurants : Boolean = false
+    private var gettingDetails : Boolean = false
     var changedFilter : Boolean = false
 
-    // FOR RESTAURANT SELECTOR
+    // FOR RESTAURANTS SELECTOR
     var restaurantID: String? = null
     var restaurantName: String? = null
 
-    var disposable : Disposable? = null
+    // FOR REQUEST
+    private var disposable : Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_main)
         loadDatas()
         loading = findViewById(R.id.loading)
+        loadingContent = findViewById(R.id.content_loading)
+        loadingContent!!.text = getString(R.string.initActivity)
         setLoading(true, true)
-        //loading!!.visibility = VISIBLE
         fragmentContainer = findViewById(R.id.fragmentContainer)
         val firestore : FirebaseFirestore = FirebaseFirestore.getInstance()
         val settings : FirebaseFirestoreSettings = FirebaseFirestoreSettings.Builder()
@@ -147,8 +159,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         Log.d("ENABLE NOTIF ???", Data.enableNotif.toString())
 
-
-
         if (savedInstanceState == null) {
             val extras = intent.extras
             if (extras != null){
@@ -157,10 +167,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 restaurantName = extras.getString("RestaurantName")
             }
 
-            if(Data.enableNotif)
+            if(Data.enableNotif && !fromNotif)
                 setNotification()
-            else
-                cancelNotification()
 
             initActivity()
         }
@@ -171,21 +179,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if(!CheckIfTest.isRunningTest("NavDrawerTest"))
             when(isCurrentUserLogged()){
                 true -> {
+                    Log.d("CURRENT USER", "TRUE")
                     checkUserInFirestore()
                     this.setLocalisationData()
+                    execRequest(CODE_GPS)
                     this.configureToolBar()
                     this.configureBottomBar()
                     this.setDrawerLayout()
                     this.setNavigationView()
-                    Data.tab = if(intent.extras.containsKey("Index"))
-                        intent.extras.getInt("Index")
-                    else
-                        1
+
                     saveDatas()
-                    execRequest(GPS)
                 }
-                false -> setFragment(0)
-                else -> setFragment(0)
+                false -> {
+                    Log.d("CURRENT USER", "FALSE")
+                    setFragment(0)
+                }
+                else -> {
+                    Log.d("CURRENT USER", "ELSE")
+                    setFragment(0)
+                }
             }
         else{
             this.setDrawerLayout()
@@ -224,11 +236,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
        searchRestaurant.visibility = GONE
        when(tab){
            3->{
-                searchWorkmate.visibility = VISIBLE
-                setOnClickSearchWorkmate(searchWorkmate)
-
-               //val backSearch = searchBar!!.findViewById<ImageButton>(R.id.back_search)
-               val speechSearch = searchBar!!.findViewById<ImageButton>(R.id.speech_search)
+               searchWorkmate.visibility = VISIBLE
+               setOnClickSearchWorkmate(searchWorkmate)
 
                searchWorkmate.hint = getString(R.string.search_workmates)
                searchWorkmate.addTextChangedListener(object : TextWatcher {
@@ -237,7 +246,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                    override fun afterTextChanged(editable : Editable) {
                         val contactsFetched : ArrayList<Contact> = ArrayList()
                         contactsFetched.clear()
-                        for(c in contacts){
+                        for(c in contacts!!){
                             if(c.username.contains(editable, true)){
                                 contactsFetched.add(c)
                             }
@@ -247,9 +256,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                })
            }
            else->{
-               //val backSearch = searchBar!!.findViewById<ImageButton>(R.id.back_search)
-               val speechSearch = searchBar!!.findViewById<ImageButton>(R.id.speech_search)
-
                searchRestaurant.visibility = VISIBLE
                setOnClickSearchRestaurant(searchRestaurant)
                searchRestaurant.hint = getString(R.string.search_restaurants)
@@ -267,7 +273,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                    // This is your listview's selected item
                    val item = parent.getItemAtPosition(position) as AutocompletePrediction
                    restaurantID = item.placeId
-                   execRequest(DETAILS)
+                   execRequest(CODE_DETAILS)
                    toolbar!!.visibility = VISIBLE
                    searchBar!!.visibility = GONE
                }
@@ -277,9 +283,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setOnClickSearchRestaurant(input : AutoCompleteTextView){
-        val search = SetImageColor.changeDrawableColor(this ,R.drawable.search, resources.getColor(R.color.colorGrey))
-        val mic= SetImageColor.changeDrawableColor(this ,R.drawable.mic, resources.getColor(R.color.colorPrimary))
-        val cross = SetImageColor.changeDrawableColor(this ,R.drawable.close, resources.getColor(R.color.colorBlack))
+        val search = SetImageColor.changeDrawableColor(this ,R.drawable.search, ContextCompat.getColor(this, R.color.colorGrey))
+        val mic= SetImageColor.changeDrawableColor(this ,R.drawable.mic, ContextCompat.getColor(this, R.color.colorPrimary))
+        val cross = SetImageColor.changeDrawableColor(this ,R.drawable.close, ContextCompat.getColor(this, R.color.colorBlack))
         input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, mic,null)
 
         input.setOnTouchListener { _: View, event: MotionEvent ->
@@ -287,11 +293,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 when {
                     event.rawX >= (input.right - input.compoundDrawables[2].bounds.width()) -> {
                         if (!input.isActivated) {
-
+                            if(mMicrophonePermissionGranted)
+                                startSpeechToText(input)
+                            else
+                                getMicrophonePermission()
                         } else {
                             input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, mic,null)
                             hideKeyboard()
                             input.text = null
+                            input.hint = getString(R.string.search_restaurants)
                             input.isActivated = false
                             toolbar!!.visibility = VISIBLE
                             searchBar!!.visibility = GONE
@@ -311,9 +321,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setOnClickSearchWorkmate(input : TextInputEditText){
-        val search = SetImageColor.changeDrawableColor(this ,R.drawable.search, resources.getColor(R.color.colorGrey))
-        val mic= SetImageColor.changeDrawableColor(this ,R.drawable.mic, resources.getColor(R.color.colorPrimary))
-        val cross = SetImageColor.changeDrawableColor(this ,R.drawable.close, resources.getColor(R.color.colorBlack))
+        val search = SetImageColor.changeDrawableColor(this ,R.drawable.search, ContextCompat.getColor(this, R.color.colorGrey))
+        val mic= SetImageColor.changeDrawableColor(this ,R.drawable.mic, ContextCompat.getColor(this, R.color.colorPrimary))
+        val cross = SetImageColor.changeDrawableColor(this ,R.drawable.close, ContextCompat.getColor(this, R.color.colorBlack))
         input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, mic,null)
 
         input.setOnTouchListener { _: View, event: MotionEvent ->
@@ -321,11 +331,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 when {
                     event.rawX >= (input.right - input.compoundDrawables[2].bounds.width()) -> {
                         if (!input.isActivated) {
-
+                            if(mMicrophonePermissionGranted)
+                                startSpeechToText(input)
+                            else
+                                getMicrophonePermission()
                         } else {
                             input.setCompoundDrawablesRelativeWithIntrinsicBounds(search,null, mic,null)
                             hideKeyboard()
                             input.text = null
+                            input.hint = getString(R.string.search_workmates)
                             input.isActivated = false
                             toolbar!!.visibility = VISIBLE
                             searchBar!!.visibility = GONE
@@ -341,6 +355,41 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             true
         }
+    }
+
+    private fun startSpeechToText(input: EditText) {
+        val mic= SetImageColor.changeDrawableColor(this ,R.drawable.mic, ContextCompat.getColor(this, R.color.colorAccent))
+        val cross = SetImageColor.changeDrawableColor(this ,R.drawable.close, ContextCompat.getColor(this, R.color.colorBlack))
+        input.setCompoundDrawablesRelativeWithIntrinsicBounds(mic,null, cross,null)
+        input.requestFocus()
+        input.isActivated = true
+
+        val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+        val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+
+        speechRecognizer.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(bundle: Bundle) {}
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(v: Float) {}
+            override fun onBufferReceived(bytes: ByteArray) {}
+            override fun onEndOfSpeech() {speechRecognizer.stopListening()}
+            override fun onError(i: Int) {}
+            override fun onResults(bundle: Bundle) {
+                val matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)//getting all the matches
+                //displaying the first match
+                if (matches != null)
+                    input.setText(matches[0])
+            }
+
+            override fun onPartialResults(bundle: Bundle) {}
+
+            override fun onEvent(i: Int, bundle: Bundle) {}
+        })
+
+        speechRecognizer.startListening(speechRecognizerIntent)
+        input.setText("")
     }
 
     /**
@@ -379,19 +428,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // Configure BottomBar
     private fun configureBottomBar() {
         this.bottom = this.findViewById(R.id.bottom_menu)
+        this.bottom!!.selectedItemId = when(Data.tab) {
+            1 -> R.id.map_button
+            2 -> R.id.restaurants_button
+            3 -> R.id.workmates_button
+            else -> R.id.restaurants_button
+        }
         this.bottom!!.setOnNavigationItemSelectedListener { item ->
             setLoading(false, true)
             when (item.itemId) {
                 R.id.map_button -> {
                     Data.tab = 1
-                    execRequest(GPS)}
+                    execRequest(CODE_GPS)}
                 R.id.restaurants_button -> {
                     Data.tab = 2
-                    execRequest(RESTAURANTS)
+                    execRequest(CODE_RESTAURANTS)
                 }
                 R.id.workmates_button -> {
                     Data.tab = 3
-                    execRequest(CONTACTS)
+                    execRequest(CODE_CONTACTS)
                 }
             }
             saveDatas()
@@ -454,7 +509,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if(user!!.whereEatID.isNotEmpty()){
                     restaurantID = user!!.whereEatID
                     restaurantName = user!!.whereEatName
-                    execRequest(DETAILS)
+                    execRequest(CODE_DETAILS)
                 }else{
                     popupMsg(getString(R.string.none_restaurant))
                 }
@@ -472,10 +527,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      * Change Fragment
      */
     private fun setFragment(index: Int){
+        loadingContent!!.text = getString(R.string.loadingView)
         hideKeyboard()
         if (fromNotif) {
             fromNotif=false
-            execRequest(DETAILS)
+            execRequest(CODE_DETAILS)
         }else {
             var fragment: Fragment? = null
             invalidateOptionsMenu()
@@ -501,37 +557,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     fragment = this.workmatesFragment
                 }
                 4 -> {
-                    Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
-                    supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-                    hiddenItems = true
-                    toolbar!!.setNavigationOnClickListener {
-                        when (lastTab) {
-                            1 -> execRequest(GPS)
-                            2 -> execRequest(RESTAURANTS)
-                            3 -> execRequest(CONTACTS)
-                            else -> setFragment(lastTab)
-                        }
-                    }
+                    setSpecificFrame()
                     this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
-                    bottom!!.visibility = GONE
-                    setFrameLayoutMargin(false)
                     fragment = this.detailsFragment
                 }
                 5 -> {
-                    Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
-                    supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-                    hiddenItems = true
-                    toolbar!!.setNavigationOnClickListener {
-                        when (lastTab) {
-                            1 -> execRequest(GPS)
-                            2 -> execRequest(RESTAURANTS)
-                            3 -> execRequest(CONTACTS)
-                            else -> setFragment(lastTab)
-                        }
-                    }
+                    setSpecificFrame()
                     this.settingsFragment = SettingsFragment.newInstance(this)
-                    bottom!!.visibility = GONE
-                    setFrameLayoutMargin(false)
                     fragment = this.settingsFragment
                 }
             }
@@ -551,6 +583,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private fun setSpecificFrame(){
+        Data.tab = lastTab
+        Objects.requireNonNull<ActionBar>(supportActionBar).setHomeAsUpIndicator(R.drawable.back_button)
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        hiddenItems = true
+        toolbar!!.setNavigationOnClickListener {
+            setLoading(true, true)
+            when (lastTab) {
+                1 -> execRequest(CODE_GPS)
+                2 -> execRequest(CODE_RESTAURANTS)
+                3 -> execRequest(CODE_CONTACTS)
+                else -> setFragment(lastTab)
+            }
+        }
+        bottom!!.visibility = GONE
+        setFrameLayoutMargin(false)
+    }
+
     fun popupMsg(msg : String){
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
@@ -566,7 +616,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         val intent = Intent(applicationContext, NotificationReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(applicationContext,
-                987, intent, PendingIntent.FLAG_ONE_SHOT)
+                987, intent, PendingIntent.FLAG_CANCEL_CURRENT)
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pendingIntent)
@@ -616,8 +666,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    @SuppressLint("SetTextI18n")
     @Suppress("UNCHECKED_CAST")
     private fun loadUserData(data : DocumentSnapshot){
+        loadingContent!!.text = getString(R.string.checkingWorkmates)
         user=User(
                 data["uid"] as String,
                 data["username"] as String,
@@ -629,10 +681,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 data["restLiked"] as ArrayList<String> )
 
         contacts = ArrayList()
-        contacts.clear()
+        contacts!!.clear()
         UserHelper.getUsersCollection().get().addOnSuccessListener {
             for(contact in it.documents){
-
                 if(contact.get("uid").toString() != getCurrentUser()!!.uid) {
                     val uid = contact.get("uid").toString()
                     val username = contact.get("username").toString()
@@ -643,7 +694,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val restLiked= contact.get("restLiked") as ArrayList<String>
 
 
-                    // WAS TO RANDOM LIKE RESTAURANT AROUND FOR EACH CONTACT
+                    // WAS TO RANDOM LIKE RESTAURANTS AROUND FOR EACH CONTACT
 
                     /*restLiked = ArrayList()
                     val restarr : ArrayList<String> = arrayListOf(
@@ -677,11 +728,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             restLiked.add(restarr[rand])
                     }*/
 
-
                     val cntc = Contact(uid, username, urlPicture, whereEatID, whereEatName, whereEatDate, restLiked)
 
                     //UserHelper.updateContact(uid, cntc)
-                    contacts.add(cntc)
+                    contacts!!.add(cntc)
+                    loadingContent!!.text = "${getString(R.string.updatingWorkmates)} ${contacts!!.size}"
                 }
             }
 
@@ -689,8 +740,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    fun ClosedRange<Int>.random() =
-            Random().nextInt((endInclusive + 1) - start) +  start
+    //fun ClosedRange<Int>.random() = Random().nextInt((endInclusive + 1) - start) +  start
 
     // Http request that create user in firestore
     private fun createUserInFirestore(){
@@ -703,6 +753,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val whereDate = ""
             val restLiked : ArrayList<String> = ArrayList()
             UserHelper.createUser(uid, username!!, mail!!, urlPicture, whereEat, whereEat, whereDate, restLiked).addOnFailureListener(this.onFailureListener())
+            checkUserInFirestore()
+        }else{
             checkUserInFirestore()
         }
     }
@@ -725,6 +777,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (requestCode == signInFragment?.rcSignIn ?: Int) {
             if (resultCode == Activity.RESULT_OK) {
                 // SUCCESS
+                Data.tab = lastTab
                 initActivity()
                 popupMsg(getString(R.string.connection_succeed))
             } else { // ERRORS
@@ -752,80 +805,102 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     fun execRequest(req : Int) {
         when (req) {
-            GPS ->{
+            CODE_GPS ->{
                 getDeviceLocation()
             }
-            RESTAURANTS -> {
+            CODE_RESTAURANTS -> {
                 if (mLastKnownLocation != null){
-                    disposable = ApiStreams.streamFetchRestaurants(getString(R.string.google_maps_key), mLastKnownLocation!!, lang)
-                        .subscribeWith(object : DisposableObserver<Place>() {
-                            override fun onNext(place: Place) {
-                                setAllRestaurants(place)
-                            }
+                    if(!gettingRestaurants) {
+                        gettingRestaurants = true
+                        disposable = ApiStreams.streamFetchRestaurants(getString(R.string.google_maps_key), mLastKnownLocation!!, lang)
+                                .subscribeWith(object : DisposableObserver<Place>() {
+                                    override fun onNext(place: Place) {
+                                        setAllRestaurants(place)
+                                    }
 
-                            override fun onError(e: Throwable) {
-                                Log.e("MAP RX", e.toString())
-                            }
+                                    override fun onError(e: Throwable) {
+                                        Log.e("MAP RX", e.toString())
+                                    }
 
-                            override fun onComplete() {}
-                        })
+                                    override fun onComplete() {}
+                                })
+                    }
                 }else{
-                    execRequest(GPS)
+                    fromRestaurants = true
+                    getDeviceLocation()
                 }
             }
-            CONTACTS -> {
-                checkUserInFirestore()
+            CODE_CONTACTS -> {
+                if(!gettingContacts) {
+                    gettingContacts = true
+                    checkUserInFirestore()
+                }
             }
-            DETAILS -> {
-                disposable = ApiStreams.streamFetchDetails(getString(R.string.google_maps_key), restaurantID!!, lang)
-                    .subscribeWith(object : DisposableObserver<Details>() {
-                        override fun onNext(details: Details) {
-                            setDetailsObject(details)
-                        }
+            CODE_DETAILS -> {
+                if(mLastKnownLocation != null) {
+                    if(!gettingDetails) {
+                        gettingDetails = true
+                        disposable = ApiStreams.streamFetchDetails(getString(R.string.google_maps_key), restaurantID!!, lang)
+                                .subscribeWith(object : DisposableObserver<Details>() {
+                                    override fun onNext(details: Details) {
+                                        setDetailsObject(details)
+                                    }
 
-                        override fun onError(e: Throwable) {
-                            Log.e("DETAILS RX", e.toString())
-                        }
+                                    override fun onError(e: Throwable) {
+                                        Log.e("CODE_DETAILS RX", e.toString())
+                                    }
 
-                        override fun onComplete() {}
-                    })
+                                    override fun onComplete() {}
+                                })
+                    }
+                }else{
+                    fromDetails=true
+                    getDeviceLocation()
+                }
             }
         }
     }
 
+    @SuppressLint("SetTextI18n")
     fun setAllRestaurants(p : Place){
+        loadingContent!!.text = getString(R.string.checkingRestaurants)
         place = p
-        for (r in place!!.results)
-            r.distance = SphericalUtil.computeDistanceBetween(mLastKnownLocation, LatLng(r.geometry.location.lat, r.geometry.location.lng))
 
-        if(contacts.size!=0)
+        for ((index, r) in place!!.results.withIndex()) {
+            r.distance = SphericalUtil.computeDistanceBetween(mLastKnownLocation, LatLng(r.geometry.location.lat, r.geometry.location.lng))
+            loadingContent!!.text = "${getString(R.string.updatingRestaurants)} $index"
+        }
+        gettingRestaurants=false
+        if(contacts != null)
             setAllContacts()
-        else
-            execRequest(CONTACTS)
+        else{
+            if(!gettingContacts)
+                execRequest(CODE_CONTACTS)
+        }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setAllContacts(){
-
+        loadingContent!!.text = getString(R.string.checkingDatas)
         if(place!=null){
-            for(r in place!!.results){
+            for((i,r) in place!!.results.withIndex()){
                 if(user!!.restLiked.contains(r.placeId))
                     r.liked++
-                for(c in contacts){
-
+                for((y, c )in contacts!!.withIndex()){
+                    loadingContent!!.text = "${getString(R.string.updatingDatas)} ${(i + 1) * (y + 1)}"
                     if(c.restLiked.contains(r.placeId))
                         r.liked++
                 }
             }
 
             val sortedRestaurant = when(Data.filter){
-                0 -> place!!.results
                 1 -> place!!.results.sortedWith(compareBy<Result> { it.distance })
                 2 -> place!!.results.sortedWith(compareByDescending<Result> { it.liked })
                 3 -> place!!.results.sortedWith(compareByDescending<Result> { it.rating })
                 4 -> place!!.results.sortedWith(compareByDescending<Result> { it.distance })
                 5 -> place!!.results.sortedWith(compareBy<Result> { it.liked })
                 6 -> place!!.results.sortedWith(compareBy<Result> { it.rating })
-                else -> place!!.results
+                else -> place!!.results.sortedWith(compareBy<Result> { it.distance })
             }
 
             place!!.results.clear()
@@ -843,16 +918,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.FRANCE)
 
-            for(c in contacts){
+            for(c in contacts!!){
                 val now : Calendar = Calendar.getInstance()
                 now.time = df.parse(c.whereEatDate)
 
-                val nows = df.format(now.time)
-                val todays = df.format(today.time)
-                val espace = "  ||  "
+                val nowTime = df.format(now.time)
 
                 if(c.whereEatID.isNotEmpty() && now.after(today)){
-                    Log.d(c.username, "$nows $espace $todays")
                     for(r in place!!.results){
                         if(r.placeId==c.whereEatID) {
                             if (!r.workmates.contains(c)) {
@@ -862,24 +934,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         }
                     }
                 }else{
-                    c.whereEatDate = nows
+                    c.whereEatDate = nowTime
                     c.whereEatID = ""
                     c.whereEatName = ""
                     // UNCOMMENT UNDER IF WANNA SETUP FIRESTORE BUT UPDATE AUTORIZATION WITH
                     //UserHelper.updateContact(c.uid, c)
                 }
             }
+
+            gettingContacts=false
             if(changedFilter){
                 changedFilter = false
                 setFragment(lastTab)
             }else
                 setFragment(Data.tab)
         }else{
-            execRequest(RESTAURANTS)
+            if(!gettingRestaurants)
+                execRequest(CODE_RESTAURANTS)
         }
     }
 
     fun setDetailsObject(det: Details){
+        gettingDetails=false
         this.details = det
         val fType = details!!.result.types
 
@@ -899,7 +975,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (task.isSuccessful && task.result != null) {
                     Log.d(TAG, " TASK DEVICE LOCATION SUCCESS")
                     mLastKnownLocation = LatLng(task.result.latitude, task.result.longitude)
-                    execRequest(RESTAURANTS)
+                    when {
+                        fromDetails -> {
+                            fromDetails=false
+                            execRequest(CODE_DETAILS)
+                        }
+                        fromRestaurants -> {
+                            fromRestaurants=false
+                            execRequest(CODE_RESTAURANTS)
+                        }
+                        else -> execRequest(CODE_RESTAURANTS)
+                    }
                 } else {
                     Log.e("MAP LOCATION", "Exception: %s", task.exception)
                     // Prompt the user for permission.
@@ -937,9 +1023,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun setFrameLayoutMargin(marged : Boolean){
+    private fun setFrameLayoutMargin(gotMarge : Boolean){
         val marge = calculateActionBar()
-        val bottom = if(marged) marge else 0
+        val bottom = if(gotMarge) marge else 0
         val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         layoutParams.setMargins(0, marge, 0, bottom)
         fragmentContainer!!.layoutParams = layoutParams
@@ -972,6 +1058,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private fun getMicrophonePermission(){
+
+        if (ContextCompat.checkSelfPermission(applicationContext,
+                        android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            mMicrophonePermissionGranted = true
+            //micro(number!!)
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(android.Manifest.permission.RECORD_AUDIO),
+                    PERMISSIONS_MICROPHONE)
+        }
+    }
+
     private fun getPhoneCallPermission() {
         /*
      * Request phone call permission.
@@ -994,6 +1093,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                             grantResults: IntArray) {
         mLocationPermissionGranted = false
         mPhoneCallPermissionGranted = false
+        mMicrophonePermissionGranted = false
         when (requestCode) {
             PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION -> {
                 // If request is cancelled, the result arrays are empty.
@@ -1009,6 +1109,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     callTo(number!!)
                 }
             }
+            PERMISSIONS_MICROPHONE -> {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mMicrophonePermissionGranted = true
+                    //micro(number!!)
+                }
+            }
         }
     }
 
@@ -1017,15 +1124,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if(onoff){
             if(type){
                 fllp.setMargins(0,0,0,0)
-                loading!!.background = resources.getDrawable(R.drawable.login_screen)
-                loading!!.findViewById<TextView>(R.id.title_loading).setTextColor(resources.getColor(R.color.colorWhite))
-                loading!!.findViewById<TextView>(R.id.label_loading).setTextColor(resources.getColor(R.color.colorWhite))
+                loading!!.background = ContextCompat.getDrawable(this, R.drawable.login_screen)
+                loading!!.findViewById<TextView>(R.id.title_loading).setTextColor(ContextCompat.getColor(this, R.color.colorWhite))
+                loading!!.findViewById<TextView>(R.id.label_loading).setTextColor(ContextCompat.getColor(this, R.color.colorWhite))
             }else{
                 val size = calculateActionBar()
                 fllp.setMargins(0,size,0,size)
-                loading!!.setBackgroundColor(resources.getColor(R.color.colorWhite))
-                loading!!.findViewById<TextView>(R.id.title_loading).setTextColor(resources.getColor(R.color.colorWhite))
-                loading!!.findViewById<TextView>(R.id.label_loading).setTextColor(resources.getColor(R.color.colorPrimaryDark))
+                loading!!.setBackgroundColor(ContextCompat.getColor(this, R.color.colorWhite))
+                loading!!.findViewById<TextView>(R.id.title_loading).setTextColor(ContextCompat.getColor(this, R.color.colorWhite))
+                loading!!.findViewById<TextView>(R.id.label_loading).setTextColor(ContextCompat.getColor(this, R.color.colorPrimaryDark))
             }
             loading!!.visibility = VISIBLE
         }
@@ -1038,8 +1145,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     private fun loadDatas() {
         Data.lang = getPreferences(Context.MODE_PRIVATE).getInt("LANG", 0)
-        Data.tab = getPreferences(Context.MODE_PRIVATE).getInt("TAB", 1)
-        Data.filter = getPreferences(Context.MODE_PRIVATE).getInt("FILTER", 0)
+        Data.tab = getPreferences(Context.MODE_PRIVATE).getInt("TAB", 2)
+        Data.filter = getPreferences(Context.MODE_PRIVATE).getInt("FILTER", 1)
         Data.enableNotif = getPreferences(Context.MODE_PRIVATE).getBoolean("NOTIF", true)
     }
 

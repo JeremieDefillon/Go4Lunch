@@ -3,10 +3,10 @@ package com.gz.jey.go4lunch.models
 object Data {
 
     var lang: Int = 0
-    var tab: Int = 1
+    var tab: Int = 2
     var enableNotif: Boolean = true
-    var filter : Int = 0
+    var filter : Int = 1
 
-    var notifHour : Int = 21
-    var notifMinute : Int = 52
+    var notifHour : Int = 8
+    var notifMinute : Int = 11
 }

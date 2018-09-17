@@ -50,7 +50,7 @@
     <string name="settings">Préférences</string>
     <string name="power_settings">Se Déconnecter</string>
 
-    <!-- RESTAURANT DETAILS BUTTON -->
+    <!-- CODE_RESTAURANTS CODE_DETAILS BUTTON -->
     <string name="call">APPELER</string>
     <string name="like">FAVORIS</string>
     <string name="website">SITE WEB</string>
@@ -70,7 +70,7 @@
     <string name="enable_notification">Activer Notification (1 fois /jour à 12:00)</string>
     <string name="filter_list_label">Filtres liste restaurants :</string>
     <string name="by_default">Par défaut</string>
-    <string name="by_distance_less">Par distance (- à +)</string>
+    <string name="by_distance_less">Par distance (- à + , par défaut)</string>
     <string name="by_distance_more">Par distance (+ à -)</string>
     <string name="by_google_rating_less">Par note google (- à +)</string>
     <string name="by_google_rating_more">Par note google (+ à -)</string>

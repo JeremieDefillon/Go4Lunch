@@ -143,7 +143,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
         if(mainActivity!!.user!!.restLiked.contains(restaurant!!.placeId))
             restaurant!!.liked ++
 
-        for (c in mainActivity!!.contacts)
+        for (c in mainActivity!!.contacts!!)
             if(c.restLiked.contains(restaurant!!.placeId))
                 restaurant!!.liked ++
 
@@ -190,7 +190,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
             }
         }
 
-        when(CalculateRatio.getLike(restaurant!!.liked, mainActivity!!.contacts.size+1)){
+        when(CalculateRatio.getLike(restaurant!!.liked, mainActivity!!.contacts!!.size+1)){
             1 -> {this.firstStar!!.setImageDrawable(likeStar)}
             2 -> {this.firstStar!!.setImageDrawable(likeStar)
                 this.secondStar!!.setImageDrawable(likeStar)
@@ -256,7 +256,7 @@ class RestaurantDetailsFragment : Fragment(), DetailsAdapter.Listener{
 
         val workmate : ArrayList<Contact> = ArrayList()
 
-        for (c in mainActivity!!.contacts){
+        for (c in mainActivity!!.contacts!!){
             if(c.whereEatID == restaurant!!.placeId){
                 Log.d("CONTACT" , c.username)
                 workmate.add(c)

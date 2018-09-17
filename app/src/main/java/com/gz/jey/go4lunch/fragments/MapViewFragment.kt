@@ -8,8 +8,6 @@ import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -105,6 +103,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
             }
         } catch (e: SecurityException) {
             Log.e("Exception: %s", e.message)
+            mainActivity!!.getLocationPermission()
         }
     }
 
@@ -117,7 +116,7 @@ class MapViewFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickL
                break
             }
         }
-        mainActivity!!.execRequest(mainActivity!!.DETAILS)
+        mainActivity!!.execRequest(mainActivity!!.CODE_DETAILS)
         return true
     }
 

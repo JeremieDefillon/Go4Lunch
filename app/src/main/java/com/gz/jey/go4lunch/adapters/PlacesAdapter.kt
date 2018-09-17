@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 
+@Suppress("UNCHECKED_CAST")
 class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, filter: AutocompleteFilter?, boundS_GREATER_SYDNEY: LatLngBounds) : ArrayAdapter<AutocompletePrediction>(context, resourceId), Filterable {
 
     var resultList: MutableList<AutocompletePrediction> = ArrayList()
@@ -85,7 +86,7 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
                         ApiStreams.streamFetchDetails(key, r.placeId!!, 0)
                                 .subscribeWith(object : DisposableObserver<Details>() {
                                     override fun onNext(details: Details) {
-                                        val fType = details!!.result.types
+                                        val fType = details.result.types
                                         /*for(r in fType){
                                             Log.d("TYPE" , r.toString())
                                         }*/

@@ -115,7 +115,7 @@ class NotificationReceiver : BroadcastReceiver() {
                         }
 
                         override fun onError(e: Throwable) {
-                            Log.e("DETAILS NOTIF", e.toString())
+                            Log.e("CODE_DETAILS NOTIF", e.toString())
                         }
 
                         override fun onComplete() {disposeWhenDestroy()}
@@ -171,7 +171,7 @@ class NotificationReceiver : BroadcastReceiver() {
         val sb : StringBuilder = StringBuilder()
                 .append(det.result.name).append("\r\n")
                 for (c in coming)
-                     sb.append("   $sc $c $joining").append("\r\n")
+                     sb.append("\r\n").append("   $sc $c $joining")
 
 
         val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
