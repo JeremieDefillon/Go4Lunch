@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import com.bumptech.glide.RequestManager
 import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.models.Result
+import java.util.*
 
 class RestaurantsAdapter
 /**

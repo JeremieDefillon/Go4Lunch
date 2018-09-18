@@ -12,7 +12,6 @@ import com.google.android.gms.location.places.GeoDataClient
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.tasks.RuntimeExecutionException
 import com.google.android.gms.tasks.Tasks
-import com.gz.jey.go4lunch.R
 import com.gz.jey.go4lunch.models.Details
 import com.gz.jey.go4lunch.utils.ApiStreams
 import io.reactivex.observers.DisposableObserver
@@ -101,10 +100,9 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
                 if (results != null && results.count > 0) {
                     // The API returned at least one result, update the data.
                     val testList: MutableList<AutocompletePrediction> = results.values as ArrayList<AutocompletePrediction>
-                    val key = context.getString(R.string.google_maps_key)
 
                     for ((i, r) in testList.withIndex()){
-                        ApiStreams.streamFetchDetails(key, r.placeId!!, 0)
+                        ApiStreams.streamFetchDetails(r.placeId!!, 0)
                                 .subscribeWith(object : DisposableObserver<Details>() {
                                     override fun onNext(details: Details) {
                                         val fType = details.result!!.types!!

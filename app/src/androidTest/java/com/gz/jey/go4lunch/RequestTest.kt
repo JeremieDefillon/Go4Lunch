@@ -36,10 +36,9 @@ class RequestTest {
     @Test
     fun testRestaurantsRequest() {
 
-        val key = mActivity!!.resources.getString(R.string.google_maps_key)
         val loc = LatLng(45.750000,4.850000) // LYON coordinates
         //1 - Get the stream
-        val observableInfos = ApiStreams.streamFetchRestaurants(key,loc,0)
+        val observableInfos = ApiStreams.streamFetchRestaurants(loc,0)
         //2 - Call TestRequest function to test this TopStories  Request
         testRequest(observableInfos)
     }

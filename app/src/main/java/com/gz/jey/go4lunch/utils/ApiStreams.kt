@@ -29,7 +29,6 @@ object ApiStreams {
 
     /**
      * FETCH RESTAURANTS LIST REQUEST WITH GOOGLE PLACE
-     * @param key String
      * @param loc LatLng
      * @param lang Int
      * @return Observable<Place>

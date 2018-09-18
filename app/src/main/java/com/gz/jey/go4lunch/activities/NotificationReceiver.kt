@@ -23,7 +23,6 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.observers.DisposableObserver
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 class NotificationReceiver : BroadcastReceiver() {
 
@@ -107,7 +106,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 }
             }
 
-            disposable = ApiStreams.streamFetchDetails(context.getString(R.string.google_maps_key), user!!.whereEatID, lang)
+            disposable = ApiStreams.streamFetchDetails(user!!.whereEatID, lang)
                     .subscribeWith(object : DisposableObserver<Details>() {
                         override fun onNext(details: Details) {
                             buildNotification(details, context)

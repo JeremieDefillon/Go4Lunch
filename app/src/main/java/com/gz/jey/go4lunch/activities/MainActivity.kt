@@ -68,7 +68,6 @@ package com.gz.jey.go4lunch.activities
  import io.reactivex.observers.DisposableObserver
  import java.text.SimpleDateFormat
  import java.util.*
- import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
 
@@ -871,7 +870,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (mLastKnownLocation != null){
                     if(!gettingRestaurants) {
                         gettingRestaurants = true
-                        disposable = ApiStreams.streamFetchRestaurants(getString(R.string.google_maps_key), mLastKnownLocation!!, lang)
+                        disposable = ApiStreams.streamFetchRestaurants(mLastKnownLocation!!, lang)
                                 .subscribeWith(object : DisposableObserver<Place>() {
                                     override fun onNext(place: Place) {
                                         setAllRestaurants(place)
@@ -899,7 +898,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if(mLastKnownLocation != null) {
                     if(!gettingDetails) {
                         gettingDetails = true
-                        disposable = ApiStreams.streamFetchDetails(getString(R.string.google_maps_key), restaurantID!!, lang)
+                        disposable = ApiStreams.streamFetchDetails(restaurantID!!, lang)
                                 .subscribeWith(object : DisposableObserver<Details>() {
                                     override fun onNext(details: Details) {
                                         setDetailsObject(details)

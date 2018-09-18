@@ -6,7 +6,6 @@ import android.support.test.rule.ActivityTestRule
 import android.support.test.runner.AndroidJUnit4
 import android.support.v4.app.Fragment
 import android.view.View
-import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import com.gz.jey.go4lunch.activities.MainActivity
 import com.gz.jey.go4lunch.fragments.MapViewFragment
