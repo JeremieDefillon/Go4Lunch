@@ -1,6 +1,7 @@
 package com.gz.jey.go4lunch.utils
 
 import com.google.android.gms.maps.model.LatLng
+import com.gz.jey.go4lunch.BuildConfig
 import com.gz.jey.go4lunch.models.Details
 import com.gz.jey.go4lunch.models.Place
 import io.reactivex.Observable
@@ -33,7 +34,7 @@ object ApiStreams {
      * @param lang Int
      * @return Observable<Place>
      */
-    fun streamFetchRestaurants(key: String, loc: LatLng , lang: Int): Observable<Place> {
+    fun streamFetchRestaurants(loc: LatLng , lang: Int): Observable<Place> {
         val location = loc.latitude.toString()+","+loc.longitude.toString()
         //location = "45.750000,4.850000"
         val radius = "8000"
@@ -43,7 +44,7 @@ object ApiStreams {
 
         val apiService = this.retrofit.create(ApiService::class.java)
 
-        return apiService.getRestaurants(type, location, radius, rankby, language, key)
+        return apiService.getRestaurants(type, location, radius, rankby, language, BuildConfig.GOOGLE_MAPS_KEY)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(20, TimeUnit.SECONDS)
@@ -51,18 +52,17 @@ object ApiStreams {
 
     /**
      * FETCH RESTAURANT DETAILS REQUEST WITH GOOGLE PLACE
-     * @param key String
      * @param id String
      * @param lang Int
      * @return Observable<Details>
      */
-    fun streamFetchDetails(key: String, id:String, lang: Int): Observable<Details> {
+    fun streamFetchDetails(id:String, lang: Int): Observable<Details> {
         val fields = "place_id,name,vicinity,photo,opening_hours,rating,international_phone_number,formatted_phone_number,website,types"
         val language = if (lang==1) "fr" else "en"
 
         val apiService = this.retrofit.create(ApiService::class.java)
 
-        return apiService.getDetails(id , fields, language, key)
+        return apiService.getDetails(id , fields, language, BuildConfig.GOOGLE_MAPS_KEY)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(20, TimeUnit.SECONDS)
