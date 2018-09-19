@@ -236,6 +236,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         rlp.setMargins(20,20,20,20)
     }
 
+    fun toUpp(txt : String) : String = txt.toUpperCase()
+
     /**
      * CONFIGURE SEARCHBAR
      */
