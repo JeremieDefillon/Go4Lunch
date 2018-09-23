@@ -82,15 +82,15 @@ class WorkmatesFragment : Fragment(), WorkmatesAdapter.Listener{
     private fun setOnClickRecyclerView() {
         ItemClickSupport.addTo(recyclerView!!, R.layout.workmates_item)
                 .setOnItemClickListener { _, position, _ ->
-                    val rid = mainActivity!!.contacts!![position].whereEatID
-                    val nam = mainActivity!!.contacts!![position].whereEatName
+                    val rid = contacts!![position].whereEatID
+                    val nam = contacts!![position].whereEatName
                     if(!rid.isEmpty()){
                         mainActivity!!.setLoading(false, true)
                         mainActivity!!.restaurantID = rid
                         mainActivity!!.restaurantName = nam
                         mainActivity!!.execRequest(mainActivity!!.CODE_DETAILS)
                     }else{
-                        val cont = mainActivity!!.contacts!![position].username
+                        val cont = contacts!![position].username
                         val unch = getString(R.string.doesnt_chosen)
                         mainActivity!!.popupMsg("$cont $unch")
                     }

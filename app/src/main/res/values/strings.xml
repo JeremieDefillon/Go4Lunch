@@ -19,6 +19,12 @@
     <string name="noRestaurantFound">Any restaurant found around</string>
     <string name="inLoading">Loading …</string>
 
+    <!-- TOOLBAR TITLE -->
+    <string name="sign_in_title">Sign In</string>
+    <string name="hungry_title">I\'m hungry !</string>
+    <string name="workmates_title">My Workmates</string>
+    <string name="details_title">Restaurant Details</string>
+    <string name="settings_title">Settings</string>
 
     <!-- RESULT SIGN IN -->
     <string name="connection_succeed">Connection Succeed !</string>

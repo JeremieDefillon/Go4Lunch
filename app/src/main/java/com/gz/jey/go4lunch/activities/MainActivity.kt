@@ -563,30 +563,36 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             Data.tab = index
             when (index) {
                 0 -> {
+                    supportActionBar!!.title = getString(R.string.sign_in_title)
                     this.signInFragment = SignInFragment.newInstance(this)
                     fragment = this.signInFragment
                 }
                 1 -> {
+                    supportActionBar!!.title = getString(R.string.hungry_title)
                     lastTab = index
                     this.mapViewFragment = MapViewFragment.newInstance(this)
                     fragment = this.mapViewFragment
                 }
                 2 -> {
+                    supportActionBar!!.title = getString(R.string.hungry_title)
                     lastTab = index
                     this.restaurantsFragment = RestaurantsFragment.newInstance(this)
                     fragment = this.restaurantsFragment
                 }
                 3 -> {
+                    supportActionBar!!.title = getString(R.string.workmates_title)
                     lastTab = index
                     this.workmatesFragment = WorkmatesFragment.newInstance(this)
                     fragment = this.workmatesFragment
                 }
                 4 -> {
+                    supportActionBar!!.title = getString(R.string.details_title)
                     setSpecificFrame()
                     this.detailsFragment = RestaurantDetailsFragment.newInstance(this)
                     fragment = this.detailsFragment
                 }
                 5 -> {
+                    supportActionBar!!.title = getString(R.string.settings_title)
                     setSpecificFrame()
                     this.settingsFragment = SettingsFragment.newInstance(this)
                     fragment = this.settingsFragment

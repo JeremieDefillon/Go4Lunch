@@ -18,6 +18,13 @@
     <string name="noRestaurantFound">Aucun restaurant trouvé aux alentours</string>
     <string name="inLoading">Chargement …</string>
 
+    <!-- TOOLBAR TITLE -->
+    <string name="sign_in_title">S\'identifier</string>
+    <string name="hungry_title">J\'ai faim !</string>
+    <string name="workmates_title">Mes Collègues</string>
+    <string name="details_title">Détails Restaurant</string>
+    <string name="settings_title">Paramètres</string>
+
     <!-- RESULT SIGN IN -->
     <string name="connection_succeed">Connection Succeed !</string>
     <string name="error_authentication_canceled">Error Authentication Canceled !</string>
