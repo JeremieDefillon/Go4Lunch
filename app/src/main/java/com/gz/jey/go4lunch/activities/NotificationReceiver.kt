@@ -106,7 +106,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 }
             }
 
-            disposable = ApiStreams.streamFetchDetails(user!!.whereEatID, lang)
+            disposable = ApiStreams.streamFetchDetails(user!!.whereEatID)
                     .subscribeWith(object : DisposableObserver<Details>() {
                         override fun onNext(details: Details) {
                             buildNotification(details, context)

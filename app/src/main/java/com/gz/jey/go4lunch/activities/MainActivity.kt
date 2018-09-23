@@ -124,7 +124,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var username : String?= null
     var email : String?= null
     private var number : String? = null
-    var lang = 1
     private var hiddenItems = false
     private var fromRestaurants : Boolean = false
     private var fromNotif : Boolean = false
@@ -147,6 +146,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_main)
+        setLang()
         loadDatas()
         loading = findViewById(R.id.loading)
         loadingContent = findViewById(R.id.content_loading)
@@ -174,6 +174,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             initActivity()
         }
+    }
+
+    private fun setLang(){
+        Data.lang = if(Locale.getDefault().displayLanguage=="fr") 1 else 0
     }
 
     /**
@@ -235,8 +239,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         rlp.height = (calculateActionBar()*0.7f).toInt()
         rlp.setMargins(20,20,20,20)
     }
-
-    fun toUpp(txt : String) : String = txt.toUpperCase()
 
     /**
      * CONFIGURE SEARCHBAR
@@ -878,7 +880,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (mLastKnownLocation != null){
                     if(!gettingRestaurants) {
                         gettingRestaurants = true
-                        disposable = ApiStreams.streamFetchRestaurants(mLastKnownLocation!!, lang)
+                        disposable = ApiStreams.streamFetchRestaurants(mLastKnownLocation!!)
                                 .subscribeWith(object : DisposableObserver<Place>() {
                                     override fun onNext(place: Place) {
                                         setAllRestaurants(place)
@@ -906,7 +908,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if(mLastKnownLocation != null) {
                     if(!gettingDetails) {
                         gettingDetails = true
-                        disposable = ApiStreams.streamFetchDetails(restaurantID!!, lang)
+                        disposable = ApiStreams.streamFetchDetails(restaurantID!!)
                                 .subscribeWith(object : DisposableObserver<Details>() {
                                     override fun onNext(details: Details) {
                                         setDetailsObject(details)
@@ -1263,7 +1265,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      * LOAD ALL THE SAVED DATAS FROM PREFERENCES
      */
     private fun loadDatas() {
-        Data.lang = getPreferences(Context.MODE_PRIVATE).getInt("LANG", 0)
         Data.tab = getPreferences(Context.MODE_PRIVATE).getInt("TAB", 2)
         Data.tab = if(Data.tab!=1 && Data.tab !=2 && Data.tab!=3) 2 else Data.tab
         Data.filter = getPreferences(Context.MODE_PRIVATE).getInt("FILTER", 1)
@@ -1276,7 +1277,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun saveDatas() {
         val preferences = getPreferences(Context.MODE_PRIVATE)
         val editor = preferences.edit()
-        editor.putInt("LANG", Data.lang)
         editor.putInt("TAB", Data.tab)
         editor.putInt("FILTER", Data.filter)
         editor.putBoolean("NOTIF", Data.enableNotif)

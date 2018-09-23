@@ -2,6 +2,7 @@ package com.gz.jey.go4lunch.utils
 
 import com.google.android.gms.maps.model.LatLng
 import com.gz.jey.go4lunch.BuildConfig
+import com.gz.jey.go4lunch.models.Data
 import com.gz.jey.go4lunch.models.Details
 import com.gz.jey.go4lunch.models.Place
 import io.reactivex.Observable
@@ -33,12 +34,12 @@ object ApiStreams {
      * @param lang Int
      * @return Observable<Place>
      */
-    fun streamFetchRestaurants(loc: LatLng , lang: Int): Observable<Place> {
+    fun streamFetchRestaurants(loc: LatLng): Observable<Place> {
         val location = loc.latitude.toString()+","+loc.longitude.toString()
         //location = "45.750000,4.850000"
         val radius = "8000"
         val rankby = "distance"
-        val language = if (lang==1) "fr" else "en"
+        val language = if (Data.lang==1) "fr" else "en"
         val type = "restaurant"
 
         val apiService = this.retrofit.create(ApiService::class.java)
@@ -55,9 +56,9 @@ object ApiStreams {
      * @param lang Int
      * @return Observable<Details>
      */
-    fun streamFetchDetails(id:String, lang: Int): Observable<Details> {
+    fun streamFetchDetails(id:String): Observable<Details> {
         val fields = "place_id,name,vicinity,photo,opening_hours,rating,international_phone_number,formatted_phone_number,website,types"
-        val language = if (lang==1) "fr" else "en"
+        val language = if (Data.lang==1) "fr" else "en"
 
         val apiService = this.retrofit.create(ApiService::class.java)
 

@@ -102,7 +102,7 @@ class PlacesAdapter(context: Context, resourceId: Int, geoData: GeoDataClient, f
                     val testList: MutableList<AutocompletePrediction> = results.values as ArrayList<AutocompletePrediction>
 
                     for ((i, r) in testList.withIndex()){
-                        ApiStreams.streamFetchDetails(r.placeId!!, 0)
+                        ApiStreams.streamFetchDetails(r.placeId!!)
                                 .subscribeWith(object : DisposableObserver<Details>() {
                                     override fun onNext(details: Details) {
                                         val fType = details.result!!.types!!
